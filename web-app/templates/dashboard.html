@@ -1,15 +1,42 @@
 {% extends 'base.html' %}
-
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
 {% if session.get('user_id') %}
-    <h1>Hello, {{ session['user_id'] }}!</h1>
-    <p>Your progress so far:</p>
-    <ul>
-        <li>Lessons completed: {{ progress.lessons_completed or 0 }}</li>
-        <li>Assessments passed: {{ progress.assessments_passed or 0 }}</li>
-    </ul>
+
+    <h1 class="dash-title">Welcome, <span class="username">{{ session['user_id'] }}</span>!</h1>
+    <p class="subtitle">Here is your current ASL training progress:</p>
+
+    <div class="card">
+        <h2>Lessons</h2>
+        {% if progress.lessons_completed %}
+            <p class="progress-box">Lessons completed: <strong>{{ progress.lessons_completed|length }}</strong></p>
+            <ul>
+                {% for lesson in progress.lessons_completed %}
+                    <li>{{ lesson }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-msg">You haven't completed any lessons yet — start your first one in the Lessons tab!</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Assessments</h2>
+
+        {% if progress.assessments_passed %}
+            <p class="progress-box">Assessments passed: <strong>{{ progress.assessments_passed|length }}</strong></p>
+
+            <ul>
+                {% for test in progress.assessments_passed %}
+                    <li>{{ test }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-msg">No assessments passed yet.</p>
+        {% endif %}
+    </div>
+
 {% else %}
     <h1>Welcome to the ASL Practice App!</h1>
     <p>Please <a href="{{ url_for('auth.login') }}">login</a> or <a href="{{ url_for('auth.register') }}">register</a> to get started.</p>
