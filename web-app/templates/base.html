@@ -12,10 +12,10 @@
 <body>
     <nav>
         <h1>ASL Trainer</h1>
-        <a href="dashboard.html">Home</a>
-        <a href="login.html">Login</a>
-        <a href="register.html">Sign Up</a>
-        <a href="lessons.html">Lessons</a>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('auth.login') }}">Login</a>
+        <a href="{{ url_for('auth.register') }}">Sign Up</a>
+        <a href="{{ url_for('training.lessons') }}">Lessons</a>
     </nav>
 
     <main>
