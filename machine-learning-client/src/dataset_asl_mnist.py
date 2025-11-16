@@ -33,18 +33,13 @@ class ASLMNISTDataset(Dataset):
     """
     Wrapper around Hugging Face Voxel51/American-Sign-Language-MNIST.
 
-    - Downloads/loads the dataset via `datasets.load_dataset`
-    - Converts HF's non-contiguous labels to contiguous [0..23] indices
+    - Downloads/loads the dataset via datasets.load_dataset
+    - Converts HF's non-contiguous labels to contiguous indices
       using raw_label_to_index from label_map.json
     - Returns (image_tensor, label_index)
     """
 
-    def __init__(
-        self,
-        split: str = "train",
-        transform: Optional[Callable] = None,
-        as_pil: bool = False,
-    ):
+    def __init__(self, split: str = "train", transform: Optional[Callable] = None, as_pil: bool = False):
         """
         Args:
             split: "train", "test", or "validation"
@@ -52,7 +47,6 @@ class ASLMNISTDataset(Dataset):
                        If None, images will be converted to float32
                        tensors in [0, 1] with shape (1, 28, 28).
             as_pil: If True, __getitem__ returns PIL.Image instead of tensor
-                    (useful if you want to handle transforms outside).
         """
         self.dataset = load_dataset("Voxel51/American-Sign-Language-MNIST", split=split)
 
@@ -71,7 +65,6 @@ class ASLMNISTDataset(Dataset):
     def __getitem__(self, idx: int):
         sample = self.dataset[idx]
 
-        # HF gives us 28x28 grayscale images
         # Convert to PIL for consistency
         img = sample["image"]
         if not isinstance(img, Image.Image):
