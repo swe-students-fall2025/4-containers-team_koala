@@ -13,10 +13,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = PROJECT_ROOT / "data" / "webcam_landmarks.npz"
 MODELS_DIR = PROJECT_ROOT / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
-OUT_PATH = MODELS_DIR / "mlp_webcam.pt"
+OUT_PATH = MODELS_DIR / "mlp_webcam.pt" # where the saved model will be
 
 
 def load_dataset():
+    """
+    Loads the dataset specified in the DATA_PATH constant
+    """
     data = np.load(DATA_PATH)
     X = data["X"]
     y = data["y"]
@@ -29,14 +32,48 @@ def load_dataset():
     return TensorDataset(X_t, y_t)
 
 
-def train(
-    batch_size: int = 64,
-    lr: float = 1e-3,
-    weight_decay: float = 1e-4,
-    num_epochs: int = 30,
-    val_split: float = 0.2,
-):
+def train(batch_size: int = 64, lr: float = 1e-3, weight_decay: float = 1e-4, num_epochs: int = 30, val_split: float = 0.2):
+    """
+    Train an MLP classifier on the recorded MediaPipe hand-landmark dataset
 
+    This function loads the dataset stored in data/webcam_landmarks.npz,
+    splits it into training and validation subsets, constructs a lightweight
+    feed-forward neural network, and optimizes it using cross-entropy loss. 
+    
+    Will save the best-performing model checkpoint to `models/mlp_webcam.pt`
+
+    Args:
+        batch_size::int (optional):
+            Number of samples per training batch. Defaults to 64.
+
+        lr::float (optional):
+            Learning rate for the Adam optimizer. Defaults to 1e-3.
+
+        weight_decay::float (optional):
+            L2 regularization strength applied through the Adam optimizer.
+            Helps reduce overfitting. Defaults to 1e-4.
+
+        num_epochs::int (optional):
+            Number of full training passes over the dataset. Defaults to 30.
+
+        val_split::float (optional):
+            Fraction of the dataset to reserve for validation. Defaults to 0.2
+
+    Workflow:
+        1. Load landmark dataset
+        2. Split into train/validation
+        3. Build DataLoaders for minibatch training.
+        4. Automatically infer the number of gesture classes from labels.
+        5. Initialize LandmarkMLP and send it to CPU
+        6. Train using Adam + cross-entropy:
+            - Track training loss
+            - Track validation accuracy every epoch
+        7. Save model weights whenever validation accuracy improves.
+
+    Returns:
+        None
+            The trained model is saved to disk rather than returned
+    """
     dataset = load_dataset()
     n_total = len(dataset)
     n_val = int(n_total * val_split)
@@ -102,7 +139,7 @@ def train(
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             torch.save(model.state_dict(), OUT_PATH)
-            print(f"  ▶ New best model saved to {OUT_PATH} (val acc: {best_val_acc:.4f})")
+            print(f"New best model saved to {OUT_PATH} (val acc: {best_val_acc:.4f})")
 
     print(f"Training done. Best val acc: {best_val_acc:.4f}")
     print(f"Final model weights at: {OUT_PATH}")
