@@ -6,7 +6,7 @@ def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "dev_key"  # replace later
 
-    # MongoDB will be provided by teammate
+    # Setup MongoDB connection
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongodb:27017/asl")
     app.db = MongoClient(MONGO_URI).get_database()
 

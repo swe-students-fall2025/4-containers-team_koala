@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% if session.get('user_id') %}
+    <h1>Hello, {{ session['user_id'] }}!</h1>
+    <p>Your progress so far:</p>
+    <ul>
+        <li>Lessons completed: {{ progress.lessons_completed or 0 }}</li>
+        <li>Assessments passed: {{ progress.assessments_passed or 0 }}</li>
+    </ul>
+{% else %}
+    <h1>Welcome to the ASL Practice App!</h1>
+    <p>Please <a href="login.html">login</a> or <a href="register.html">register</a> to get started.</p>
+{% endif %}
+{% endblock %}
