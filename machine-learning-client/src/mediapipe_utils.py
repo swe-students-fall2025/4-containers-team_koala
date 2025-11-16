@@ -22,12 +22,7 @@ class HandLandmarks:
 
 
 class MediaPipeHandDetector:
-    def __init__(
-        self,
-        max_num_hands: int = 1,
-        detection_confidence: float = 0.5,
-        tracking_confidence: float = 0.5,
-    ):
+    def __init__(self, max_num_hands: int = 1, detection_confidence: float = 0.5, tracking_confidence: float = 0.5):
         self.hands = mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=max_num_hands,
@@ -38,10 +33,9 @@ class MediaPipeHandDetector:
     def process(self, frame_bgr: np.ndarray) -> List[HandLandmarks]:
         """
         Run MediaPipe Hands on a BGR frame.
-        Returns a list of HandLandmarks objects (possibly empty).
+        Returns a list of HandLandmarks objects.
         """
-        # MediaPipe expects RGB
-        frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+        frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB) # ignore errors, cv2 modules aren't annotated properly
         results = self.hands.process(frame_rgb)
 
         landmarks_list: List[HandLandmarks] = []
@@ -66,9 +60,8 @@ class MediaPipeHandDetector:
 def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
     """
     Normalize hand landmarks:
-    - Translate so wrist (index 0) is at origin.
+    - Translate so wrist is at origin.
     - Scale so that the max distance to any point is 1.
-    Returns a flattened vector of shape (63,) for (21,3).
 
     Args:
         pts: np.ndarray of shape (21, 3) in normalized image coords.
@@ -91,7 +84,7 @@ def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
 def draw_hand_landmarks_on_frame(frame_bgr: np.ndarray, hand: HandLandmarks) -> None:
     """
     Draw simple circles and connection lines for a single hand's landmarks
-    onto the given BGR frame (in-place).
+    onto the given BGR frame.
 
     Args:
         frame_bgr: np.ndarray of shape (H, W, 3), OpenCV BGR image.
