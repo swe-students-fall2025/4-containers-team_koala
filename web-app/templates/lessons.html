@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Lessons{% endblock %}
+
+{% block content %}
+<h1>ASL Lessons</h1>
+<p>Select a lesson to begin practicing!</p>
+
+<ul class="lessons-list">
+    {% for lesson in lessons %}
+        <li>
+            <a href="{{ url_for('training.lesson', num=lesson.id) }}">
+                {{ lesson.title }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('dashboard.home') }}" class="btn-back">← Back to Dashboard</a>
+{% endblock %}
