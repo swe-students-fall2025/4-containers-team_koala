@@ -1,5 +1,3 @@
-# src/webcam_demo.py
-
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -26,6 +24,9 @@ MODEL_PATH = MODELS_DIR / "mlp_webcam.pt"
 
 
 def load_index_to_letter():
+    """
+    Loads index to letter mappings from data/label_map.json file
+    """
     with open(LABEL_MAP_PATH, "r") as f:
         mapping = json.load(f)
     index_to_letter = {int(k): v for k, v in mapping["index_to_letter"].items()}
@@ -34,7 +35,6 @@ def load_index_to_letter():
 
 def main():
     index_to_letter = load_index_to_letter()
-
     num_classes = len(index_to_letter)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -58,6 +58,7 @@ def main():
         pred_letter = "-"
         pred_conf = 0.0
 
+        # when we detect a hand, draw landmarks and predict letter only if confidence > 0.5
         if hands:
             draw_hand_landmarks_on_frame(frame, hands[0])
 
