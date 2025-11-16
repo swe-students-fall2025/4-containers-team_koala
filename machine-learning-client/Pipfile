@@ -6,6 +6,13 @@ name = "pypi"
 [packages]
 pylint = "*"
 black = "*"
+tensorflow = "*"
+datasets = "*"
+torchvision = "*"
+opencv-python = "*"
+mediapipe = "*"
+numpy = "*"
+torch = "*"
 
 [dev-packages]
 
