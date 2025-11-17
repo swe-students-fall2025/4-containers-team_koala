@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Assessment - Lesson {{ lesson_num }}{% endblock %}
+
+{% block content %}
+<h1>Assessment Results: Lesson {{ lesson_num }} - {{ lesson.title }}</h1>
+
+{% if overall_pass %}
+    <p class="assessment-result passed">
+        🎉 Great job! You passed this assessment.
+    </p>
+{% else %}
+    <p class="assessment-result failed">
+        Keep going! You did not pass yet. Review which letters need more practice.
+    </p>
+{% endif %}
+
+<table class="assessment-table">
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Target Sign</th>
+            <th>Required Repetitions</th>
+            <th>Detected (above confidence)</th>
+            <th>Passed?</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in task_results %}
+            <tr class="{% if task.passed %}row-pass{% else %}row-fail{% endif %}">
+                <td>{{ task.prompt }}</td>
+                <td>{{ task.target_sign }}</td>
+                <td>{{ task.min_repetitions }}</td>
+                <td>{{ task.matched_count }}</td>
+                <td>
+                    {% if task.passed %}
+                        ✅
+                    {% else %}
+                        ❌
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>Make sure your webcam client is running while you perform the tasks above. The detector will send letter predictions to the server in real-time.</p>
+
+<a href="{{ url_for('training.lesson', num=lesson_num) }}" class="btn-back">
+    ← Back to lesson
+</a>
+<a href="{{ url_for('training.lessons') }}" class="btn-secondary">
+    All lessons
+</a>
+
+{% endblock %}
