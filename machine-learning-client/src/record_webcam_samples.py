@@ -6,7 +6,7 @@ from typing import Dict, List
 import cv2
 import numpy as np
 
-from src.mediapipe_utils import (
+from .mediapipe_utils import (
     MediaPipeHandDetector,
     normalize_landmarks,
     draw_hand_landmarks_on_frame,
