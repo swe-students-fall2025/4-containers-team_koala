@@ -22,9 +22,14 @@ nav {
     color: white;
     padding: 1rem 2rem;
     display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
+    justify-content: space-between;   /* LEFT + RIGHT */
+    align-items: center;              /* vertically center */
     border-bottom: 3px solid #00f2fe;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;   /* controls spacing between links */
 }
 
 nav a {
@@ -153,4 +158,49 @@ a:hover {
         align-items: flex-start;
         gap: 0.5rem;
     }
+}
+
+
+/* Lessons List */
+.lessons-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.lessons-list li {
+    margin: 1rem 0;
+}
+
+.lessons-list a {
+    background: #fff;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    display: inline-block;
+    font-weight: 600;
+    color: #2c3e50;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid #4facfe;
+}
+
+.lessons-list a:hover {
+    background: #4facfe;
+    color: #fff;
+    transform: scale(1.03);
+}
+
+/* Back button */
+.btn-back {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.6rem 1rem;
+    background: #f1f1f1;
+    border-radius: 6px;
+    color: #444;
+    text-decoration: none;
+    border: 1px solid #bbb;
+}
+
+.btn-back:hover {
+    background: #ddd;
 }
