@@ -13,6 +13,7 @@ opencv-python = "*"
 mediapipe = "*"
 numpy = "*"
 torch = "*"
+flask = "*"
 
 [dev-packages]
 
