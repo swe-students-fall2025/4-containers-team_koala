@@ -1,0 +1,6 @@
+numpy
+torch
+mediapipe
+opencv-python
+datasets
+flask
