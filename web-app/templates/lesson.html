@@ -3,12 +3,22 @@
 {% block title %}Lesson {{ lesson_num }}{% endblock %}
 
 {% block content %}
-<h1>Lesson {{ lesson_num }}</h1>
-<p>{{ description }}</p>
+<h1>Lesson {{ lesson_num }}: {{ description }}</h1>
 
-<div class="lesson-content">
-    <p>(to be completed.)</p>
-</div>
+{% if signs %}
+    <h2>Target letters in this lesson</h2>
+    <ul class="sign-list">
+        {% for s in signs %}
+            <li>{{ s }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<p>Start your webcam client and practice these letters. When you're ready, run the assessment.</p>
+
+<a href="{{ url_for('training.assessment', num=lesson_num) }}" class="btn-primary">
+    Start Assessment
+</a>
 
 <a href="{{ url_for('training.lessons') }}" class="btn-back">← Back to lessons</a>
 {% endblock %}
