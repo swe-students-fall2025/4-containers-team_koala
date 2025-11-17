@@ -10,5 +10,19 @@ services:
     build: ./web-app
     ports:
       - "5000:5000"
+    env_file:
+      - ./web-app/.env
     depends_on:
       - ml
+      - mongo 
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+
+
+volumes:
+  mongo-data:
