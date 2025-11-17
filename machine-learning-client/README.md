@@ -1,4 +1,25 @@
-# Usage Guide
+# API Contract
+
+## POST
+Requests from the frontend should be the raw MediaPipe landmarks. No changes done to the data
+```bash
+POST /predict
+{
+  "points": [[x0, y0, z0], ..., [x20, y20, z20]]
+}
+```
+
+### Response
+```bash
+{
+  "letter": "S",
+  "confidence": 0.97
+}
+```
+The response returned will be a JSON object containing the letter and the prediction confidence.
+
+
+# Raw Usage Guide
 
 This guide explains how to:
 
