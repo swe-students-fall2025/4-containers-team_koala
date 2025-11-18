@@ -25,8 +25,6 @@ The repository is a **monorepo**: both Python subsystems live here and share a s
 
 ## Team
 
-> ⚠️ Replace the placeholders below with your actual teammate names and GitHub profile links.
-
 - [Kylie Lin](https://github.com/kylin1209)  
 - [Alex Xie](https://github.com/axie22)  
 - [Jacob Ng](https://github.com/jng20)
