@@ -9,6 +9,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from models.model_MLP import LandmarkMLP
 from .mediapipe_utils import normalize_landmarks
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 logger.info("Loaded model from %s", MODEL_PATH)
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/health", methods=["GET"])
 def health() -> Any:

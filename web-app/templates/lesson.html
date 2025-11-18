@@ -16,9 +16,47 @@
 
 <p>Start your webcam client and practice these letters. When you're ready, run the assessment.</p>
 
+<div class="webcam-section">
+    <h2>Live Practice</h2>
+
+    <div class="webcam-container">
+        <!-- Video feed from the browser's webcam -->
+        <video
+            id="video"
+            autoplay
+            playsinline
+            width="640"
+            height="480"
+            style="background: #000; border: 1px solid #ccc;"
+        ></video>
+
+        <canvas
+            id="overlay"
+            width="640"
+            height="480"
+            style="position: absolute; top: 0; left: 0; pointer-events: none;"
+        ></canvas>
+    </div>
+
+    <div class="prediction-panel">
+        <p>Predicted letter: <span id="letter-display">-</span></p>
+        <p>Confidence: <span id="confidence-display">0.00</span></p>
+    </div>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/webcam.js') }}"></script>
+
+<p>When you feel comfortable with the signs in this lesson, click below to start the assessment.</p>
+
 <a href="{{ url_for('training.assessment', num=lesson_num) }}" class="btn-primary">
     Start Assessment
 </a>
 
 <a href="{{ url_for('training.lessons') }}" class="btn-back">← Back to lessons</a>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<script type="module" src="{{ url_for('static', filename='js/webcam.js') }}"></script>
 {% endblock %}

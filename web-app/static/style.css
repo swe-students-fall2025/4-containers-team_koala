@@ -204,3 +204,8 @@ a:hover {
 .btn-back:hover {
     background: #ddd;
 }
+
+.webcam-container {
+  position: relative;
+  display: inline-block;
+}
