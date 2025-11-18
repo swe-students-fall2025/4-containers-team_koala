@@ -4,3 +4,4 @@ mediapipe
 opencv-python
 datasets
 flask
+flask-cors
