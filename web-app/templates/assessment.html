@@ -3,96 +3,101 @@
 {% block title %}Assessment - Lesson {{ lesson_num }}{% endblock %}
 
 {% block content %}
-<h1>Assessment: Lesson {{ lesson_num }} - {{ lesson.title }}</h1>
+<h1>Assessment for Lesson {{ lesson_num }}</h1>
+<p>{{ lesson.description }}</p>
 
-<p id="status">Starting webcam...</p>
+<h2>Tasks</h2>
+<ul>
+    {% for task in tasks %}
+        <li>
+            <strong>{{ task.prompt }}</strong><br>
+            Target: {{ task.target_sign }}
+            | Repetitions required: {{ task.min_repetitions }}
+            | Min confidence: {{ task.min_confidence }}
+        </li>
+    {% endfor %}
+</ul>
 
-<video id="webcam" autoplay playsinline width="400" height="300" style="border: 1px solid #ccc;"></video>
+<hr>
 
-<table class="assessment-table">
-    <thead>
-        <tr>
-            <th>Task</th>
-            <th>Target Sign</th>
-            <th>Required Repetitions</th>
-            <th>Detected (above confidence)</th>
-            <th>Passed?</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for task in tasks %}
-        <tr id="task-{{ loop.index0 }}">
-            <td>{{ task.prompt }}</td>
-            <td>{{ task.target_sign }}</td>
-            <td>{{ task.min_repetitions }}</td>
-            <td class="detected-count">0</td>
-            <td class="passed">❌</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<h2>Live Assessment</h2>
+
+<div class="webcam-section" style="position:relative; width:640px; height:480px;">
+    <video
+        id="video"
+        autoplay
+        playsinline
+        width="640"
+        height="480"
+        style="background:#000;border:1px solid #ccc;"
+    ></video>
+
+    <canvas
+        id="overlay"
+        width="640"
+        height="480"
+        style="position:absolute;top:0;left:0;pointer-events:none;"
+    ></canvas>
+</div>
+
+<div class="prediction-panel">
+    <p>Predicted letter: <span id="letter-display">-</span></p>
+    <p>Confidence: <span id="confidence-display">0.00</span></p>
+</div>
+
+<h3>Task Status</h3>
+<div id="task-status"></div>
+
+<p id="assessment-result" style="font-size:1.2em;font-weight:bold;"></p>
 
 <a href="{{ url_for('training.lesson', num=lesson_num) }}" class="btn-back">← Back to lesson</a>
-<a href="{{ url_for('training.lessons') }}" class="btn-secondary">All lessons</a>
 
-<!-- MediaPipe scripts -->
+<!-- Load MediaPipe scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
-<script>
-const videoElement = document.getElementById('webcam');
-const statusElement = document.getElementById('status');
+<!-- Webcam + detection -->
+<script type="module" src="{{ url_for('static', filename='js/webcam.js') }}"></script>
 
-const hands = new Hands({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-});
+<!-- Grading hook: send predictions to backend -->
+<script type="module">
+document.addEventListener("DOMContentLoaded", () => {
+    const POST_URL = "{{ url_for('training.assessment', num=lesson_num) }}";
+    const taskStatusDiv = document.getElementById("task-status");
+    const assessmentResult = document.getElementById("assessment-result");
 
-hands.setOptions({
-    maxNumHands: 1,
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.7
-});
+    // Live grading hook
+    window.onPrediction = function(letter, confidence, landmarks) {
+        if (!landmarks || landmarks.length === 0) return;
 
-hands.onResults(async (results) => {
-    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
-
-    const landmarks = results.multiHandLandmarks[0].map(p => [p.x, p.y, p.z]);
-
-    try {
-        const resp = await fetch(window.location.pathname, {
+        fetch(POST_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ points: landmarks })
-        });
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.task_results) return;
 
-        const data = await resp.json();
+            // Update task status
+            taskStatusDiv.innerHTML = data.task_results.map(t => `
+                <p>
+                    <strong>${t.prompt}</strong><br>
+                    Matched: ${t.matched_count}
+                    | Required: ${t.min_repetitions}
+                    | Status: <span style="color:${t.passed ? 'green' : 'red'}">
+                        ${t.passed ? 'Passed' : 'Not yet'}
+                    </span>
+                </p>
+            `).join("");
 
-        if (data.error) {
-            statusElement.textContent = "Error: " + data.error;
-            return;
-        }
-
-        statusElement.textContent = `Last detected: ${data.current_letter} (confidence: ${data.current_confidence.toFixed(2)})`;
-
-        data.task_results.forEach((task, i) => {
-            const row = document.getElementById(`task-${i}`);
-            row.querySelector(".detected-count").textContent = task.matched_count;
-            row.querySelector(".passed").textContent = task.passed ? "✅" : "❌";
-        });
-
-    } catch (err) {
-        statusElement.textContent = "Failed to contact server";
-        console.error(err);
-    }
+            // Show overall assessment result
+            assessmentResult.textContent = data.overall_pass ? "🎉 Assessment Passed!" : "";
+            assessmentResult.style.color = data.overall_pass ? "green" : "black";
+        })
+        .catch(err => console.error("Grading error:", err));
+    };
 });
-
-// Camera from global object
-const camera = new Camera(videoElement, {
-    onFrame: async () => await hands.send({ image: videoElement }),
-    width: 400,
-    height: 300
-});
-camera.start();
 </script>
-
 {% endblock %}

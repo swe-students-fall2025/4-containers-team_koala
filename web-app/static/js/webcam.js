@@ -15,10 +15,8 @@ let inFlight = false;
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    console.log("Got camera stream:", stream);
     videoEl.srcObject = stream;
     await videoEl.play();
-    console.log("Video playing");
   } catch (err) {
     console.error("Camera error:", err);
   }
@@ -26,7 +24,7 @@ async function startCamera() {
 
 // MediaPipe Setup
 const hands = new Hands({
-  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
 });
 
 hands.setOptions({
@@ -51,28 +49,26 @@ hands.onResults(async (results) => {
     }
   }
 
-  // Clear and draw the underlying video frame
+  // Clear and draw video frame
   ctx.save();
   ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
   ctx.drawImage(results.image, 0, 0, canvasEl.width, canvasEl.height);
   ctx.restore();
 
   const multiHandLandmarks = results.multiHandLandmarks;
-  if (!multiHandLandmarks || multiHandLandmarks.length === 0) {
-    return;
-  }
+  if (!multiHandLandmarks || multiHandLandmarks.length === 0) return;
 
   const landmarks = multiHandLandmarks[0];
 
-  // Draw landmarks and connections
+  // Draw landmarks
   drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: "#00FF00", lineWidth: 2 });
   drawLandmarks(ctx, landmarks, { color: "#FF0000", lineWidth: 1 });
 
-  // Throttle ML calls
+  // Throttle ML API calls
   frameCount++;
   if (frameCount % PREDICT_EVERY_N_FRAMES !== 0 || inFlight) return;
 
-  const points = landmarks.map(lm => [lm.x, lm.y, lm.z]);
+  const points = landmarks.map((lm) => [lm.x, lm.y, lm.z]);
 
   inFlight = true;
   try {
@@ -93,6 +89,11 @@ hands.onResults(async (results) => {
       if (confidenceEl && typeof data.confidence === "number") {
         confidenceEl.innerText = data.confidence.toFixed(2);
       }
+
+      // Hook for assessment.html
+      if (window.onPrediction) {
+        window.onPrediction(data.letter, data.confidence, points);
+      }
     }
   } catch (err) {
     console.error("Prediction error:", err);
@@ -101,15 +102,12 @@ hands.onResults(async (results) => {
   }
 });
 
-// feed frames from <video> into Hands 
+// Feed video frames into MediaPipe
 async function loop() {
-  if (videoEl.readyState >= 2) { 
+  if (videoEl.readyState >= 2) {
     await hands.send({ image: videoEl });
   }
   requestAnimationFrame(loop);
 }
 
-startCamera().then(() => {
-  console.log("Camera started, beginning MediaPipe loop");
-  loop();
-});
+startCamera().then(() => loop());
