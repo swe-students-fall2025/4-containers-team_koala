@@ -1,8 +1,7 @@
-from flask import Blueprint, render_template, session, redirect, url_for, current_app
 from bson import ObjectId
+from flask import Blueprint, render_template, session, redirect, url_for, current_app
 
 dashboard = Blueprint("dashboard", __name__, url_prefix="/dashboard")
-
 
 @dashboard.route("/")
 def home():
@@ -12,44 +11,26 @@ def home():
     db = current_app.db
     user_id = session["user_id"]
 
-    # Load user for display info
-    try:
-        user = db["users"].find_one({"_id": ObjectId(user_id)})
-    except Exception:
-        # If session somehow stores a bad ID, log out safely
-        session.clear()
-        return redirect(url_for("auth.login"))
-
+    # Load user
+    user = db["users"].find_one({"_id": ObjectId(user_id)})
     if not user:
         session.clear()
         return redirect(url_for("auth.login"))
 
     username = user.get("username", "User")
 
-    # Query assessments using ObjectId
-    assessments = list(db["assessments"].find({
-        "user_id": ObjectId(user_id)
-    }))
+    # Get progress
+    progress = user.get("progress", {})
+    lessons_completed_ids = progress.get("lessons_completed", [])
+    assessments_taken_titles = progress.get("assessments_taken", [])
 
-    lessons_completed = sorted({
-        a.get("lesson_id")
-        for a in assessments
-        if a.get("lesson_id") is not None
-    })
-
-    assessments_passed = [
-        a.get("lesson_id")
-        for a in assessments
-        if a.get("passed") is True and a.get("lesson_id") is not None
-    ]
-
-    progress = {
-        "lessons_completed": lessons_completed,
-        "assessments_passed": assessments_passed,
-    }
+    # Map lesson numbers to lesson titles
+    from routes.training import LESSON_MAP
+    lessons_completed = [LESSON_MAP.get(l, {}).get("title", f"Lesson {l}") for l in lessons_completed_ids]
 
     return render_template(
         "dashboard.html",
         username=username,
-        progress=progress
+        lessons_completed=lessons_completed,
+        assessments_taken=assessments_taken_titles
     )

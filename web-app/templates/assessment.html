@@ -93,8 +93,15 @@ document.addEventListener("DOMContentLoaded", () => {
             `).join("");
 
             // Show overall assessment result
-            assessmentResult.textContent = data.overall_pass ? "🎉 Assessment Passed!" : "";
-            assessmentResult.style.color = data.overall_pass ? "green" : "black";
+            if (data.overall_pass) {
+                assessmentResult.textContent = "🎉 Assessment Passed! Redirecting to Dashboard...";
+                assessmentResult.style.color = "green";
+
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('dashboard.home') }}";
+                }, 2000);
+            }
         })
         .catch(err => console.error("Grading error:", err));
     };
