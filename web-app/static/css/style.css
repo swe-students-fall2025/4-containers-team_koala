@@ -209,3 +209,12 @@ a:hover {
   position: relative;
   display: inline-block;
 }
+/* image display */
+.asl-img {
+    width: 70%;
+    max-width: 550px;
+    display: block;
+    margin: 20px auto;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}

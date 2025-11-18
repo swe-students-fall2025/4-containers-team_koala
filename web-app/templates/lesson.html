@@ -5,17 +5,16 @@
 {% block content %}
 <h1>Lesson {{ lesson_num }}: {{ description }}</h1>
 
-{% if signs %}
+{% if image_file %}
     <h2>Target letters in this lesson</h2>
     <ul class="sign-list">
-        {% for s in signs %}
-            <li>{{ s }}</li>
-        {% endfor %}
+        <img src="{{ url_for('static', filename='images/' ~ image_file) }}"
+            class="asl-img"
+            alt="Lesson image">
     </ul>
 {% endif %}
 
-<p>Start your webcam client and practice these letters. When you're ready, run the assessment.</p>
-
+<p>Start your webcam client and practice these letters.</p>
 <div class="webcam-section">
     <h2>Live Practice</h2>
 

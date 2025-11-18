@@ -21,31 +21,31 @@ LESSONS: List[Dict[str, Any]] = [
         "id": 1,
         "title": "Lesson 1: ASL Alphabet A-G",
         "description": "Learn and practice ASL handshapes for the letters A through G.",
-        "signs": ["A", "B", "C", "D", "E", "F", "G"],
+        # "signs": ["A", "B", "C", "D", "E", "F", "G"],
     },
     {
         "id": 2,
         "title": "Lesson 2: ASL Alphabet H-N",
         "description": "Learn and practice ASL handshapes for the letters H through N.",
-        "signs": ["H", "I", "J", "K", "L", "M", "N"],
+        # "signs": ["H", "I", "J", "K", "L", "M", "N"],
     },
     {
         "id": 3,
         "title": "Lesson 3: ASL Alphabet O-U",
         "description": "Learn and practice ASL handshapes for the letters O through U.",
-        "signs": ["O", "P", "Q", "R", "S", "T", "U"],
+        # "signs": ["O", "P", "Q", "R", "S", "T", "U"],
     },
     {
         "id": 4,
         "title": "Lesson 4: ASL Alphabet V-Z",
         "description": "Learn and practice ASL handshapes for the letters V through Z.",
-        "signs": ["V", "W", "X", "Y", "Z"],
+        # "signs": ["V", "W", "X", "Y", "Z"],
     },
     {
         "id": 5,
         "title": "Final Practice Lesson",
         "description": "Review all letters A-Z and test your recognition skills.",
-        "signs": list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+        # "signs": list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
     },
 ]
 
@@ -171,11 +171,20 @@ def lesson(num: int) -> str:
     if lesson_obj is None:
         return redirect(url_for("training.lessons"))
 
+    IMAGE_MAP = {
+        1: "a_to_g.png",
+        2: "h_to_n.png",
+        3: "o_to_u.png",
+        4: "v_to_z.png",
+        5: "all_letters.png"
+    }
+
     return render_template(
         "lesson.html",
         lesson_num=num,
         description=lesson_obj["description"],
-        signs=lesson_obj["signs"],
+        # signs=lesson_obj["signs"],
+        image_file=IMAGE_MAP.get(num, "all_letters.png")
     )
 
 
