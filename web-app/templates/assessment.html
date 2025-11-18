@@ -3,17 +3,11 @@
 {% block title %}Assessment - Lesson {{ lesson_num }}{% endblock %}
 
 {% block content %}
-<h1>Assessment Results: Lesson {{ lesson_num }} - {{ lesson.title }}</h1>
+<h1>Assessment: Lesson {{ lesson_num }} - {{ lesson.title }}</h1>
 
-{% if overall_pass %}
-    <p class="assessment-result passed">
-        🎉 Great job! You passed this assessment.
-    </p>
-{% else %}
-    <p class="assessment-result failed">
-        Keep going! You did not pass yet. Review which letters need more practice.
-    </p>
-{% endif %}
+<p id="status">Starting webcam...</p>
+
+<video id="webcam" autoplay playsinline width="400" height="300" style="border: 1px solid #ccc;"></video>
 
 <table class="assessment-table">
     <thead>
@@ -26,31 +20,79 @@
         </tr>
     </thead>
     <tbody>
-        {% for task in task_results %}
-            <tr class="{% if task.passed %}row-pass{% else %}row-fail{% endif %}">
-                <td>{{ task.prompt }}</td>
-                <td>{{ task.target_sign }}</td>
-                <td>{{ task.min_repetitions }}</td>
-                <td>{{ task.matched_count }}</td>
-                <td>
-                    {% if task.passed %}
-                        ✅
-                    {% else %}
-                        ❌
-                    {% endif %}
-                </td>
-            </tr>
+        {% for task in tasks %}
+        <tr id="task-{{ loop.index0 }}">
+            <td>{{ task.prompt }}</td>
+            <td>{{ task.target_sign }}</td>
+            <td>{{ task.min_repetitions }}</td>
+            <td class="detected-count">0</td>
+            <td class="passed">❌</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<p>Make sure your webcam client is running while you perform the tasks above. The detector will send letter predictions to the server in real-time.</p>
+<a href="{{ url_for('training.lesson', num=lesson_num) }}" class="btn-back">← Back to lesson</a>
+<a href="{{ url_for('training.lessons') }}" class="btn-secondary">All lessons</a>
 
-<a href="{{ url_for('training.lesson', num=lesson_num) }}" class="btn-back">
-    ← Back to lesson
-</a>
-<a href="{{ url_for('training.lessons') }}" class="btn-secondary">
-    All lessons
-</a>
+<!-- MediaPipe scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<script>
+const videoElement = document.getElementById('webcam');
+const statusElement = document.getElementById('status');
+
+const hands = new Hands({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+});
+
+hands.setOptions({
+    maxNumHands: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+});
+
+hands.onResults(async (results) => {
+    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
+
+    const landmarks = results.multiHandLandmarks[0].map(p => [p.x, p.y, p.z]);
+
+    try {
+        const resp = await fetch(window.location.pathname, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ points: landmarks })
+        });
+
+        const data = await resp.json();
+
+        if (data.error) {
+            statusElement.textContent = "Error: " + data.error;
+            return;
+        }
+
+        statusElement.textContent = `Last detected: ${data.current_letter} (confidence: ${data.current_confidence.toFixed(2)})`;
+
+        data.task_results.forEach((task, i) => {
+            const row = document.getElementById(`task-${i}`);
+            row.querySelector(".detected-count").textContent = task.matched_count;
+            row.querySelector(".passed").textContent = task.passed ? "✅" : "❌";
+        });
+
+    } catch (err) {
+        statusElement.textContent = "Failed to contact server";
+        console.error(err);
+    }
+});
+
+// Camera from global object
+const camera = new Camera(videoElement, {
+    onFrame: async () => await hands.send({ image: videoElement }),
+    width: 400,
+    height: 300
+});
+camera.start();
+</script>
 
 {% endblock %}
