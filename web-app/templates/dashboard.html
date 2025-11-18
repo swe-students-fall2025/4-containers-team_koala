@@ -4,7 +4,7 @@
 {% block content %}
 {% if session.get('user_id') %}
 
-    <h1 class="dash-title">Welcome, <span class="username">{{ session['user_id'] }}</span>!</h1>
+    <h1 class="dash-title">Welcome, <span class="username">{{ session['username'] }}</span>!</h1>
     <p class="subtitle">Here is your current ASL training progress:</p>
 
     <div class="card">
