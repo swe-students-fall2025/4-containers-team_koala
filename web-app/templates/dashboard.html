@@ -9,10 +9,10 @@
 
     <div class="card">
         <h2>Lessons</h2>
-        {% if progress.lessons_completed %}
-            <p class="progress-box">Lessons completed: <strong>{{ progress.lessons_completed|length }}</strong></p>
+        {% if lessons_completed %}
+            <p class="progress-box">Lessons completed: <strong>{{ lessons_completed|length }}</strong></p>
             <ul>
-                {% for lesson in progress.lessons_completed %}
+                {% for lesson in lessons_completed %}
                     <li>{{ lesson }}</li>
                 {% endfor %}
             </ul>
@@ -23,18 +23,11 @@
 
     <div class="card">
         <h2>Assessments</h2>
-
-        {% if progress.assessments_passed %}
-            <p class="progress-box">Assessments passed: <strong>{{ progress.assessments_passed|length }}</strong></p>
-
-            <ul>
-                {% for test in progress.assessments_passed %}
-                    <li>{{ test }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="empty-msg">No assessments passed yet.</p>
-        {% endif %}
+        {% for title in assessments_taken %}
+        <li>{{ title }}</li>
+    {% else %}
+        <li>No assessments completed yet.</li>
+    {% endfor %}
     </div>
 
 {% else %}

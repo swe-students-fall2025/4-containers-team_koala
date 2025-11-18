@@ -1,7 +1,7 @@
 from __future__ import annotations
-
 import time
 from typing import List, Dict, Any
+from bson import ObjectId
 import requests
 from flask import (
     Blueprint,
@@ -16,6 +16,7 @@ from flask import (
 
 training = Blueprint("training", __name__, url_prefix="/training")
 
+# ----------------- LESSONS -----------------
 LESSONS: List[Dict[str, Any]] = [
     {"id": 1, "title": "Lesson 1: ASL Alphabet A-G", "description": "Learn and practice ASL handshapes for the letters A through G."},
     {"id": 2, "title": "Lesson 2: ASL Alphabet H-N", "description": "Learn and practice ASL handshapes for the letters H through N."},
@@ -23,27 +24,27 @@ LESSONS: List[Dict[str, Any]] = [
     {"id": 4, "title": "Lesson 4: ASL Alphabet V-Z", "description": "Learn and practice ASL handshapes for the letters V through Z."},
     {"id": 5, "title": "Final Practice Lesson", "description": "Review all letters A-Z and test your recognition skills."},
 ]
-
 LESSON_MAP = {lesson["id"]: lesson for lesson in LESSONS}
 
+# ----------------- ASSESSMENTS -----------------
 ASSESSMENTS: Dict[int, Dict[str, Any]] = {
-    1: {"time_window_seconds": 60, "tasks": [
+    1: {"title": "Lesson 1 Assessment", "time_window_seconds": 60, "tasks": [
         {"prompt": "Sign the letter A three times.", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.8},
         {"prompt": "Sign the letter C three times.", "target_sign": "C", "min_repetitions": 3, "min_confidence": 0.8}
     ]},
-    2: {"time_window_seconds": 60, "tasks": [
+    2: {"title": "Lesson 2 Assessment", "time_window_seconds": 60, "tasks": [
         {"prompt": "Sign the letter H three times.", "target_sign": "H", "min_repetitions": 3, "min_confidence": 0.8},
         {"prompt": "Sign the letter N three times.", "target_sign": "N", "min_repetitions": 3, "min_confidence": 0.8}
     ]},
-    3: {"time_window_seconds": 60, "tasks": [
+    3: {"title": "Lesson 3 Assessment", "time_window_seconds": 60, "tasks": [
         {"prompt": "Sign the letter O three times.", "target_sign": "O", "min_repetitions": 3, "min_confidence": 0.8},
         {"prompt": "Sign the letter S three times.", "target_sign": "S", "min_repetitions": 3, "min_confidence": 0.8}
     ]},
-    4: {"time_window_seconds": 60, "tasks": [
+    4: {"title": "Lesson 4 Assessment", "time_window_seconds": 60, "tasks": [
         {"prompt": "Sign the letter V three times.", "target_sign": "V", "min_repetitions": 3, "min_confidence": 0.8},
         {"prompt": "Sign the letter Z three times.", "target_sign": "Z", "min_repetitions": 3, "min_confidence": 0.8}
     ]},
-    5: {"time_window_seconds": 90, "tasks": [
+    5: {"title": "Final Practice Assessment", "time_window_seconds": 90, "tasks": [
         {"prompt": "Sign the letter A three times.", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.8},
         {"prompt": "Sign the letter M three times.", "target_sign": "M", "min_repetitions": 3, "min_confidence": 0.8},
         {"prompt": "Sign the letter Z three times.", "target_sign": "Z", "min_repetitions": 3, "min_confidence": 0.8}
@@ -58,6 +59,7 @@ def lessons() -> str:
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     return render_template("lessons.html", lessons=LESSONS)
+
 
 @training.route("/lesson/<int:num>")
 def lesson(num: int) -> str:
@@ -76,6 +78,7 @@ def lesson(num: int) -> str:
         description=lesson_obj["description"],
         image_file=IMAGE_MAP.get(num, "all_letters.png")
     )
+
 
 @training.route("/lesson/<int:num>/assessment", methods=["GET", "POST"])
 def assessment(num: int):
@@ -141,6 +144,19 @@ def assessment(num: int):
 
         overall_pass = all(t["passed"] for t in task_results)
 
+        # Save progress if passed (store title, not ID)
+        if overall_pass:
+            assessment_title = assessment_def.get("title", f"Lesson {num} Assessment")
+            db["users"].update_one(
+                {"_id": ObjectId(user_id)},
+                {
+                    "$addToSet": {
+                        "progress.assessments_taken": assessment_title,
+                        "progress.lessons_completed": num
+                    }
+                }
+            )
+
         return jsonify({
             "current_letter": letter,
             "current_confidence": confidence,
@@ -148,5 +164,4 @@ def assessment(num: int):
             "overall_pass": overall_pass
         })
 
-    # GET request
     return render_template("assessment.html", lesson=lesson_obj, lesson_num=num, tasks=assessment_def["tasks"])
