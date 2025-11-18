@@ -2,10 +2,12 @@ name: Web App CI
 
 on:
   push:
+    branches: [ main ]
     paths:
       - "web-app/**"
       - ".github/workflows/web-app-ci.yml"
   pull_request:
+    branches: [ main ]
     paths:
       - "web-app/**"
       - ".github/workflows/web-app-ci.yml"
@@ -25,7 +27,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.10"
 
       - name: Install Pipenv
         run: pip install pipenv
@@ -33,10 +35,11 @@ jobs:
       - name: Install dependencies
         run: pipenv install --dev
 
-      - name: Lint (black and pylint)
+      - name: Lint (black)
+        run: pipenv run black --check .
+
+      - name: Lint (pylint)
         run: |
-          pipenv run black --check .
-          # Adjust paths here if needed (e.g. app.py, routes/)
           pipenv run pylint app.py routes
 
       - name: Run tests with coverage
