@@ -1,76 +1,42 @@
-"""Authentication routes for the ASL practice web app.
-
-This module handles user login, logout, and registration.
-"""
-
-from flask import Blueprint, request, redirect, url_for, flash, session, render_template
+from flask import Blueprint, request, redirect, url_for, flash, session, render_template, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from bson import ObjectId
+from datetime import datetime
 
 auth = Blueprint('auth', __name__)
-
-# Example in-memory user store (to be replaced by database)
-users = {}
-
-
-def validate_login(username: str, password: str) -> bool:
-    """Validate a user's login credentials.
-
-    Args:
-        username (str): The username provided.
-        password (str): The password provided.
-
-    Returns:
-        bool: True if credentials are valid, False otherwise.
-    """
-    user = users.get(username)
-    if not user:
-        return False
-    return check_password_hash(user['password_hash'], password)
-
-
-def validate_registration(username: str, password: str) -> tuple[bool, str]:
-    """Validate registration input.
-
-    Args:
-        username (str): The username to register.
-        password (str): The password to register.
-
-    Returns:
-        tuple[bool, str]: (True, "") if valid; otherwise (False, reason)
-    """
-    if username in users:
-        return False, "Username already exists."
-    if not username or not password:
-        return False, "Username and password cannot be empty."
-    if len(password) < 6:
-        return False, "Password must be at least 6 characters long."
-    return True, ""
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    """Handle user login.
-
-    GET: Display the login form.
-    POST: Validate credentials and log the user in.
-    """
+    """Handle user login."""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
 
-        if validate_login(username, password):
-            session['user_id'] = username
-            flash("Logged in successfully.", "success")
-            return redirect(url_for('dashboard.home'))
-        else:
+        db = current_app.db
+        user = db['users'].find_one({"username": username})
+
+        if not user or not check_password_hash(user['password_hash'], password):
             flash("Invalid username or password.", "danger")
+            return render_template('login.html')
+
+        # ✔ Store ObjectId as string in session
+        session['user_id'] = str(user['_id'])
+
+        # Update last login
+        db['users'].update_one(
+            {"_id": user["_id"]},
+            {"$set": {"last_login": datetime.utcnow()}}
+        )
+
+        flash("Logged in successfully.", "success")
+        return redirect(url_for('dashboard.home'))
 
     return render_template('login.html')
 
 
 @auth.route('/logout')
 def logout():
-    """Log the current user out and clear the session."""
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for('auth.login'))
@@ -78,23 +44,35 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
-    """Handle new user registration.
-
-    GET: Display the registration form.
-    POST: Create a new user in the database (to be implemented).
-    """
+    """Handle new user registration."""
     if request.method == 'POST':
         username = request.form.get('username')
+        email = request.form.get('email')
         password = request.form.get('password')
 
-        valid, message = validate_registration(username, password)
-        if not valid:
-            flash(message, "danger")
+        db = current_app.db
+
+        # Check if username already exists
+        if db['users'].find_one({"username": username}):
+            flash("Username already exists.", "danger")
             return render_template('register.html')
 
-        # Store password hash in memory for now (replace with DB later)
-        users[username] = {'password_hash': generate_password_hash(password)}
-        flash("Registration successful! You can now log in.", "success")
+        # Create user document
+        user_doc = {
+            "username": username,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+            "created_at": datetime.utcnow(),
+            "last_login": None,
+            "progress": {
+                "lessons_completed": [],
+                "assessments_taken": []
+            }
+        }
+
+        result = db['users'].insert_one(user_doc)
+
+        flash("Registration successful! Please log in.", "success")
         return redirect(url_for('auth.login'))
 
     return render_template('register.html')

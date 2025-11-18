@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from typing import List, Dict, Any
-
+import requests
 from flask import (
     Blueprint,
     redirect,
@@ -10,6 +10,8 @@ from flask import (
     session,
     url_for,
     current_app,
+    request, 
+    jsonify
 )
 
 training = Blueprint("training", __name__, url_prefix="/training")
@@ -17,32 +19,32 @@ training = Blueprint("training", __name__, url_prefix="/training")
 LESSONS: List[Dict[str, Any]] = [
     {
         "id": 1,
-        "title": "Lesson 1: ASL Alphabet A–G",
+        "title": "Lesson 1: ASL Alphabet A-G",
         "description": "Learn and practice ASL handshapes for the letters A through G.",
         "signs": ["A", "B", "C", "D", "E", "F", "G"],
     },
     {
         "id": 2,
-        "title": "Lesson 2: ASL Alphabet H–N",
+        "title": "Lesson 2: ASL Alphabet H-N",
         "description": "Learn and practice ASL handshapes for the letters H through N.",
         "signs": ["H", "I", "J", "K", "L", "M", "N"],
     },
     {
         "id": 3,
-        "title": "Lesson 3: ASL Alphabet O–U",
+        "title": "Lesson 3: ASL Alphabet O-U",
         "description": "Learn and practice ASL handshapes for the letters O through U.",
         "signs": ["O", "P", "Q", "R", "S", "T", "U"],
     },
     {
         "id": 4,
-        "title": "Lesson 4: ASL Alphabet V–Z",
+        "title": "Lesson 4: ASL Alphabet V-Z",
         "description": "Learn and practice ASL handshapes for the letters V through Z.",
         "signs": ["V", "W", "X", "Y", "Z"],
     },
     {
         "id": 5,
         "title": "Final Practice Lesson",
-        "description": "Review all letters A–Z and test your recognition skills.",
+        "description": "Review all letters A-Z and test your recognition skills.",
         "signs": list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
     },
 ]
@@ -148,7 +150,7 @@ ASSESSMENTS: Dict[int, Dict[str, Any]] = {
 
 
 # --------- ROUTES ----------
-
+ML_API_URL = "http://ml-api:8080/predict"
 
 @training.route("/")
 def lessons() -> str:
@@ -177,9 +179,9 @@ def lesson(num: int) -> str:
     )
 
 
-@training.route("/lesson/<int:num>/assessment")
-def assessment(num: int) -> str:
-    """Run an assessment for a given lesson based on recent ML detections."""
+@training.route("/lesson/<int:num>/assessment", methods=["GET", "POST"])
+def assessment(num: int):
+    """Run an assessment for a given lesson with ML API detection."""
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
 
@@ -191,66 +193,71 @@ def assessment(num: int) -> str:
         return redirect(url_for("training.lessons"))
 
     db = current_app.db
-    detections_coll = db["detections"]
 
-    now = time.time()
-    window_start = now - assessment_def["time_window_seconds"]
+    # ---------- POST: process landmarks ----------
+    if request.method == "POST":
+        data = request.get_json()
+        points = data.get("points")
+        if not points or len(points) != 21:
+            return jsonify({"error": "Invalid landmarks"}), 400
 
-    # Get recent detections for this user
-    recent_detections = list(
-        detections_coll.find(
-            {
+        # Call ML API
+        try:
+            ml_resp = requests.post(ML_API_URL, json={"points": points}, timeout=5).json()
+            letter = ml_resp.get("letter")
+            confidence = float(ml_resp.get("confidence", 0.0))
+        except Exception:
+            return jsonify({"error": "Failed to contact ML API"}), 500
+
+        # Save detection
+        detection = {
+            "user_id": user_id,
+            "lesson_id": num,
+            "timestamp": time.time(),
+            "sign_label": letter,
+            "confidence": confidence,
+        }
+        db["detections"].insert_one(detection)
+
+        # Check assessment tasks
+        task_results = []
+        for task in assessment_def["tasks"]:
+            target = task["target_sign"]
+            min_rep = task["min_repetitions"]
+            min_conf = task["min_confidence"]
+
+            window_start = time.time() - assessment_def["time_window_seconds"]
+            count = db["detections"].count_documents({
                 "user_id": user_id,
-                "timestamp": {"$gte": window_start},
-            }
-        )
-    )
+                "lesson_id": num,
+                "sign_label": target,
+                "confidence": {"$gte": min_conf},
+                "timestamp": {"$gte": window_start}
+            })
 
-    task_results = []
-    for task in assessment_def["tasks"]:
-        target = task["target_sign"]
-        min_rep = task["min_repetitions"]
-        min_conf = task["min_confidence"]
-
-        count = sum(
-            1
-            for d in recent_detections
-            if d.get("sign_label") == target
-            and float(d.get("confidence", 0.0)) >= min_conf
-        )
-
-        passed = count >= min_rep
-        task_results.append(
-            {
+            passed = count >= min_rep
+            task_results.append({
                 "prompt": task["prompt"],
                 "target_sign": target,
                 "min_repetitions": min_rep,
                 "min_confidence": min_conf,
                 "matched_count": count,
-                "passed": passed,
-            }
-        )
+                "passed": passed
+            })
 
-    overall_pass = all(t["passed"] for t in task_results)
+        overall_pass = all(t["passed"] for t in task_results)
 
-    # Store summary in DB (for dashboard/progress)
-    assessments_coll = db["assessments"]
-    assessments_coll.insert_one(
-        {
-            "timestamp": now,
-            "user_id": user_id,
-            "lesson_id": num,
-            "lesson_title": lesson_obj["title"],
-            "tasks": task_results,
-            "passed": overall_pass,
-        }
-    )
+        return jsonify({
+            "current_letter": letter,
+            "current_confidence": confidence,
+            "task_results": task_results,
+            "overall_pass": overall_pass
+        })
 
+    # ---------- GET: render HTML ----------
     return render_template(
         "assessment.html",
         lesson=lesson_obj,
         lesson_num=num,
-        task_results=task_results,
-        overall_pass=overall_pass,
+        tasks=assessment_def["tasks"]
     )
-
