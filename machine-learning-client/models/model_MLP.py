@@ -8,6 +8,7 @@ class ResidualBlock(nn.Module):
     """
     MLP block: x -> LN -> Linear -> GELU -> Dropout -> Linear -> +x
     """
+
     def __init__(self, dim: int, expansion: int = 2, dropout: float = 0.3):
         super().__init__()
         hidden = dim * expansion
@@ -42,7 +43,10 @@ class LandmarkMLP(nn.Module):
         self.input_proj = nn.Linear(input_dim, hidden_dim)
 
         self.blocks = nn.ModuleList(
-            [ResidualBlock(hidden_dim, expansion=2, dropout=dropout) for _ in range(num_blocks)]
+            [
+                ResidualBlock(hidden_dim, expansion=2, dropout=dropout)
+                for _ in range(num_blocks)
+            ]
         )
 
         # Final head

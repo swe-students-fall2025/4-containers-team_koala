@@ -16,6 +16,7 @@ import mediapipe as mp
 import time
 from datasets import load_dataset
 
+
 def load_label_maps(label_map_path: Optional[Path] = None):
     """
     Load index/label mappings from data/label_map.json.
@@ -38,6 +39,7 @@ def load_label_maps(label_map_path: Optional[Path] = None):
     }
     return index_to_letter, letter_to_index, raw_label_to_index
 
+
 def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
     """
     Normalize hand landmarks:
@@ -57,12 +59,14 @@ def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
 
     return centered.flatten().astype(np.float32)
 
+
 mp_hands = mp.solutions.hands
 _mp_model = mp_hands.Hands(
     static_image_mode=True,
     max_num_hands=1,
     min_detection_confidence=0.5,
 )
+
 
 def load_asl_mnist_with_retries(split="train", max_retries=1000, base_delay=60):
     for attempt in range(max_retries):
@@ -71,8 +75,10 @@ def load_asl_mnist_with_retries(split="train", max_retries=1000, base_delay=60):
         except Exception as e:
             msg = str(e)
             if "429" in msg or "Too Many Requests" in msg:
-                wait = base_delay * (2 ** attempt)
-                print(f"Got 429 from HF (attempt {attempt+1}/{max_retries}), sleeping {wait}s...")
+                wait = base_delay * (2**attempt)
+                print(
+                    f"Got 429 from HF (attempt {attempt + 1}/{max_retries}), sleeping {wait}s..."
+                )
                 time.sleep(wait)
             else:
                 raise
