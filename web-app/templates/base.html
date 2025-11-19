@@ -11,13 +11,27 @@
 
 <body>
     <nav>
-    <h1><a class="brand" href="{{ url_for('home') }}">ASL Trainer</a></h1>
-    <div class="nav-links">
-        <a href="{{ url_for('home') }}">Home</a>
+<h1>
+  <a class="brand"
+     href="{{ url_for('dashboard.home') if session.get('user_id') else url_for('home') }}">
+     ASL Trainer
+  </a>
+</h1>
+
+<div class="nav-links">
+    <a href="{{ url_for('dashboard.home') if session.get('user_id') else url_for('home') }}">
+        Home
+    </a>
+
+    {% if session.get('user_id') %}
+        <a href="{{ url_for('training.lessons') }}">Lessons</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    {% else %}
         <a href="{{ url_for('auth.login') }}">Login</a>
         <a href="{{ url_for('auth.register') }}">Sign Up</a>
-        <a href="{{ url_for('training.lessons') }}">Lessons</a>
-    </div>
+    {% endif %}
+</div>
+
 </nav>
 
     <main>
