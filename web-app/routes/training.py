@@ -274,6 +274,7 @@ def assessment(num: int):
     """Handle lesson assessments and prediction scoring."""
     response = None
     user_id = session.get("user_id")
+
     if not user_id:
         if request.method == "POST":
             response = jsonify({"error": "Not logged in"}), 401
@@ -282,6 +283,7 @@ def assessment(num: int):
     else:
         lesson_obj = LESSON_MAP.get(num)
         assessment_def = ASSESSMENTS.get(num)
+
         if not lesson_obj or not assessment_def:
             response = redirect(url_for("training.lessons"))
         elif request.method == "POST":
@@ -294,10 +296,14 @@ def assessment(num: int):
                 letter, confidence = call_ml_api(points)
                 if not letter:
                     response = jsonify({"error": "Failed to get prediction"}), 500
-                elif not save_detection(current_app.db, user_id, num, letter, confidence):
+                elif not save_detection(
+                    current_app.db, user_id, num, letter, confidence
+                ):
                     response = jsonify({"error": "Failed to save detection"}), 500
                 else:
-                    task_results, overall_pass = check_tasks(current_app.db, user_id, num, assessment_def)
+                    task_results, overall_pass = check_tasks(
+                        current_app.db, user_id, num, assessment_def
+                    )
                     if overall_pass:
                         update_progress(current_app.db, user_id, num, assessment_def)
                     response = jsonify(
