@@ -1,3 +1,4 @@
+![Lint Status](https://github.com/swe-students-fall2025/4-containers-team_koala/actions/workflows/lint.yml/badge.svg)
 [![ML Client CI](https://github.com/swe-students-fall2025/4-containers-team_koala/actions/workflows/ml-client-ci.yml/badge.svg)](https://github.com/swe-students-fall2025/4-containers-team_koala/actions/workflows/ml-client-ci.yml)
 [![Web App CI](https://github.com/swe-students-fall2025/4-containers-team_koala/actions/workflows/web-app-ci.yml/badge.svg)](https://github.com/swe-students-fall2025/4-containers-team_koala/actions/workflows/web-app-ci.yml)
 
