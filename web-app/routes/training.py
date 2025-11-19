@@ -6,7 +6,7 @@ import time
 from typing import List, Dict, Any
 
 from bson import ObjectId
-import requests
+import requests  # pylint: disable=import-error
 from flask import (
     Blueprint,
     redirect,
@@ -67,96 +67,52 @@ ASSESSMENTS: Dict[int, Dict[str, Any]] = {
         "title": "Lesson 1 Assessment",
         "time_window_seconds": 60,
         "tasks": [
-            {
-                "prompt": "Sign the letter A three times.",
-                "target_sign": "A",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
-            {
-                "prompt": "Sign the letter C three times.",
-                "target_sign": "C",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
+            {"prompt": "Sign the letter A three times.", "target_sign": "A",
+             "min_repetitions": 3, "min_confidence": 0.6},
+            {"prompt": "Sign the letter C three times.", "target_sign": "C",
+             "min_repetitions": 3, "min_confidence": 0.6},
         ],
     },
     2: {
         "title": "Lesson 2 Assessment",
         "time_window_seconds": 60,
         "tasks": [
-            {
-                "prompt": "Sign the letter H three times.",
-                "target_sign": "H",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
-            {
-                "prompt": "Sign the letter L three times.",
-                "target_sign": "L",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
+            {"prompt": "Sign the letter H three times.", "target_sign": "H",
+             "min_repetitions": 3, "min_confidence": 0.6},
+            {"prompt": "Sign the letter L three times.", "target_sign": "L",
+             "min_repetitions": 3, "min_confidence": 0.6},
         ],
     },
     3: {
         "title": "Lesson 3 Assessment",
         "time_window_seconds": 60,
         "tasks": [
-            {
-                "prompt": "Sign the letter O three times.",
-                "target_sign": "O",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
-            {
-                "prompt": "Sign the letter R three times.",
-                "target_sign": "R",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
+            {"prompt": "Sign the letter O three times.", "target_sign": "O",
+             "min_repetitions": 3, "min_confidence": 0.6},
+            {"prompt": "Sign the letter R three times.", "target_sign": "R",
+             "min_repetitions": 3, "min_confidence": 0.6},
         ],
     },
     4: {
         "title": "Lesson 4 Assessment",
         "time_window_seconds": 60,
         "tasks": [
-            {
-                "prompt": "Sign the letter W three times.",
-                "target_sign": "W",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
-            {
-                "prompt": "Sign the letter Y three times.",
-                "target_sign": "Y",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
+            {"prompt": "Sign the letter W three times.", "target_sign": "W",
+             "min_repetitions": 3, "min_confidence": 0.6},
+            {"prompt": "Sign the letter Y three times.", "target_sign": "Y",
+             "min_repetitions": 3, "min_confidence": 0.6},
         ],
     },
     5: {
         "title": "Final Practice Assessment",
         "time_window_seconds": 90,
         "tasks": [
-            {
-                "prompt": "Sign the letter B three times.",
-                "target_sign": "B",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
-            {
-                "prompt": "Sign the letter R three times.",
-                "target_sign": "R",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
-            {
-                "prompt": "Sign the letter V three times.",
-                "target_sign": "V",
-                "min_repetitions": 3,
-                "min_confidence": 0.6,
-            },
+            {"prompt": "Sign the letter B three times.", "target_sign": "B",
+             "min_repetitions": 3, "min_confidence": 0.6},
+            {"prompt": "Sign the letter R three times.", "target_sign": "R",
+             "min_repetitions": 3, "min_confidence": 0.6},
+            {"prompt": "Sign the letter V three times.", "target_sign": "V",
+             "min_repetitions": 3, "min_confidence": 0.6},
         ],
     },
 }
@@ -193,6 +149,7 @@ def lesson(num: int) -> str:
 
 
 @training.route("/lesson/<int:num>/assessment", methods=["GET", "POST"])
+# pylint: disable=too-many-locals, too-many-return-statements, broad-exception-caught
 def assessment(num: int):
     """Handle lesson assessments and prediction scoring."""
     user_id = session.get("user_id")
@@ -215,7 +172,6 @@ def assessment(num: int):
         if not points or len(points) != 21:
             return jsonify({"error": "Invalid landmarks"}), 400
 
-        # ML API call
         try:
             response_raw = requests.post(
                 ML_API_URL, json={"points": points}, timeout=5
@@ -223,6 +179,7 @@ def assessment(num: int):
             response_json = response_raw.json() if response_raw.ok else {}
             predicted_letter = response_json.get("letter")
             confidence = float(response_json.get("confidence", 0.0))
+
             if not predicted_letter:
                 raise ValueError("No prediction returned")
         except Exception as exc:
@@ -243,7 +200,6 @@ def assessment(num: int):
             print("DB error:", exc)
             return jsonify({"error": "Failed to save detection"}), 500
 
-        # Task checking
         task_results = []
         window_start = time.time() - assessment_def["time_window_seconds"]
 
@@ -257,6 +213,7 @@ def assessment(num: int):
                     "timestamp": {"$gte": window_start},
                 }
             )
+
             task_results.append(
                 {
                     "prompt": task["prompt"],
@@ -280,7 +237,7 @@ def assessment(num: int):
                     "$addToSet": {
                         "progress.assessments_taken": assessment_title,
                         "progress.lessons_completed": num,
-                    },
+                    }
                 },
             )
 
@@ -299,4 +256,3 @@ def assessment(num: int):
         lesson_num=num,
         tasks=assessment_def["tasks"],
     )
-
