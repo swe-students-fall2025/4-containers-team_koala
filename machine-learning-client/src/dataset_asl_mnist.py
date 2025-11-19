@@ -1,20 +1,20 @@
 """
-Module that handles ASL Mnist Dataset
+Module that handles ASL Mnist Dataset. NOT CURRENTLY USED IN MODEL
 """
 
 from pathlib import Path
 
 import json
 from typing import Optional, Callable, Tuple
+import time
 
-import torch
 from torch.utils.data import Dataset
 from datasets import load_dataset
 from PIL import Image
 import numpy as np
 import mediapipe as mp
-import time
-from datasets import load_dataset
+
+
 
 def load_label_maps(label_map_path: Optional[Path] = None):
     """
@@ -28,7 +28,7 @@ def load_label_maps(label_map_path: Optional[Path] = None):
     if label_map_path is None:
         label_map_path = Path(__file__).resolve().parents[1] / "data" / "label_map.json"
 
-    with open(label_map_path, "r") as f:
+    with open(label_map_path, "r", encoding='utf8') as f:
         mapping = json.load(f)
 
     index_to_letter = {int(k): v for k, v in mapping["index_to_letter"].items()}
@@ -37,6 +37,7 @@ def load_label_maps(label_map_path: Optional[Path] = None):
         int(k): int(v) for k, v in mapping["raw_label_to_index"].items()
     }
     return index_to_letter, letter_to_index, raw_label_to_index
+
 
 def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
     """
@@ -57,6 +58,7 @@ def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
 
     return centered.flatten().astype(np.float32)
 
+
 mp_hands = mp.solutions.hands
 _mp_model = mp_hands.Hands(
     static_image_mode=True,
@@ -64,15 +66,29 @@ _mp_model = mp_hands.Hands(
     min_detection_confidence=0.5,
 )
 
+
 def load_asl_mnist_with_retries(split="train", max_retries=1000, base_delay=60):
+    """
+    Loads ASL MNIST dataset with exponenetial backoffs to handle throttling from HF
+
+    Args:
+        split: ['train', 'test', 'validation']. Indicates type of split for data. Defaults to train
+        max_retries: int - indicates how many retries
+        base_delay: int - The starting delay for the process to wait before retrying
+
+    Returns:
+        ASL MNIST HF dataset
+    """
     for attempt in range(max_retries):
         try:
             return load_dataset("Voxel51/American-Sign-Language-MNIST", split=split)
         except Exception as e:
             msg = str(e)
             if "429" in msg or "Too Many Requests" in msg:
-                wait = base_delay * (2 ** attempt)
-                print(f"Got 429 from HF (attempt {attempt+1}/{max_retries}), sleeping {wait}s...")
+                wait = base_delay * (2**attempt)
+                print(
+                    f"Got 429 from HF (attempt {attempt + 1}/{max_retries}), sleeping {wait}s..."
+                )
                 time.sleep(wait)
             else:
                 raise

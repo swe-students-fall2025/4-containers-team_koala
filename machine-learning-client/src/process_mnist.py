@@ -1,3 +1,7 @@
+"""
+Script for processing MNIST dataset. Downloads to asl_mnist_landmarks.npz in data dir
+"""
+
 from pathlib import Path
 
 import numpy as np

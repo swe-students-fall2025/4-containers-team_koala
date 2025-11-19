@@ -99,8 +99,8 @@ def predict() -> Any:
 
     try:
         pts_array = np.asarray(points, dtype=np.float32)
-    except Exception:
-        return jsonify({"error": "Could not convert 'points' to a float32 array"}), 400
+    except ValueError as e:
+        return jsonify({"error": f"Could not convert 'points' to a float32 array {e}"}), 400
 
     if pts_array.shape != (21, 3):
         return jsonify(

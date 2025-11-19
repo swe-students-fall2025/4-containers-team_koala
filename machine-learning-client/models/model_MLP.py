@@ -1,3 +1,6 @@
+"""
+Model for predicting letter
+"""
 from __future__ import annotations
 import torch
 import torch.nn as nn
@@ -42,7 +45,10 @@ class LandmarkMLP(nn.Module):
         self.input_proj = nn.Linear(input_dim, hidden_dim)
 
         self.blocks = nn.ModuleList(
-            [ResidualBlock(hidden_dim, expansion=2, dropout=dropout) for _ in range(num_blocks)]
+            [
+                ResidualBlock(hidden_dim, expansion=2, dropout=dropout)
+                for _ in range(num_blocks)
+            ]
         )
 
         # Final head
