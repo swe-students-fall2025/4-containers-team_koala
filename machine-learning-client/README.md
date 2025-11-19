@@ -22,6 +22,16 @@ Since publicly available ASL datasets do not match our real-world setting, we re
 
 This gave us a clean and consistent dataset tailored to our environment.
 
+## Model Architecture
+
+We trained a fully connected neural network (MLP) with:
+
+- Input: 63 normalized landmark values
+- Two hidden layers
+- GELU activation
+- Dropout regularization
+- Output: Softmax over ASL letter classes
+
 ## API Contract
 
 ## POST
