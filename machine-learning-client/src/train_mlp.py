@@ -17,7 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = PROJECT_ROOT / "data" / "webcam_landmarks.npz"
 MODELS_DIR = PROJECT_ROOT / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
-OUT_PATH = MODELS_DIR / "mlp_webcam.pt"  # where the saved model will be
+OUT_PATH = MODELS_DIR / "mlp_webcam.pt"
 
 
 def load_dataset():
