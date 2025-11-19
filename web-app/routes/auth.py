@@ -58,6 +58,7 @@ def login():
         user = get_user_if_valid(username, password)
         if user:
             session['user_id'] = str(user['_id'])
+            session['username'] = str(user['username'])
             db = current_app.db
             db.users.update_one(
                 {"_id": user["_id"]},
@@ -108,6 +109,7 @@ def register():
 
         # Store _id in session after registration (optional auto-login)
         session['user_id'] = str(result.inserted_id)
+        session['username'] = username
 
         flash("Registration successful! You are now logged in.", "success")
         return redirect(url_for('dashboard.home'))
