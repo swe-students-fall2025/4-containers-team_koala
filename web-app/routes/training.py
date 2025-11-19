@@ -208,7 +208,9 @@ def call_ml_api(points: list) -> tuple[str, float] | tuple[None, None]:
         return None, None
 
 
-def save_detection(db, user_id: str, lesson_id: int, letter: str, confidence: float) -> bool:
+def save_detection(
+    db, user_id: str, lesson_id: int, letter: str, confidence: float
+) -> bool:
     """Save a detection to the database."""
     detection = {
         "user_id": user_id,
@@ -225,7 +227,9 @@ def save_detection(db, user_id: str, lesson_id: int, letter: str, confidence: fl
         return False
 
 
-def check_tasks(db, user_id: str, lesson_id: int, assessment_def: dict) -> tuple[list[dict], bool]:
+def check_tasks(
+    db, user_id: str, lesson_id: int, assessment_def: dict
+) -> tuple[list[dict], bool]:
     """Check task completion and return task results and overall pass."""
     task_results = []
     window_start = time.time() - assessment_def["time_window_seconds"]
@@ -301,7 +305,9 @@ def assessment(num: int):
             elif not save_detection(db, user_id, num, letter, confidence):
                 response = jsonify({"error": "Failed to save detection"}), 500
             else:
-                task_results, overall_pass = check_tasks(db, user_id, num, assessment_def)
+                task_results, overall_pass = check_tasks(
+                    db, user_id, num, assessment_def
+                )
                 if overall_pass:
                     update_progress(db, user_id, num, assessment_def)
                 response = jsonify(

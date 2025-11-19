@@ -21,10 +21,7 @@ user_doc = {
     "password_hash": "TempPass",
     "created_at": datetime.utcnow(),
     "last_login": None,
-    "progress": {
-        "lessons_completed": [],
-        "assessments_taken": []
-    }
+    "progress": {"lessons_completed": [], "assessments_taken": []},
 }
 
 assessments_doc = {
