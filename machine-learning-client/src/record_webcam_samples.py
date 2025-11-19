@@ -41,7 +41,6 @@ def append_to_npz(path, X_new, y_new):
     """
     Append new data to an existing .npz file
     """
-
     X_new = np.asarray(X_new)
     y_new = np.asarray(y_new)
 
@@ -153,7 +152,6 @@ def main():
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     append_to_npz(OUT_PATH, X, y)
-    # np.savez(OUT_PATH, X=X, y=y)
 
     print(f"Saved {len(y)} samples to {OUT_PATH}")
 
