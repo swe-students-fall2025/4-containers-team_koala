@@ -1,4 +1,9 @@
+"""
+Module that handles ASL Mnist Dataset
+"""
+
 from pathlib import Path
+
 import json
 from typing import Optional, Callable
 
