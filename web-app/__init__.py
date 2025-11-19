@@ -7,8 +7,10 @@ def create_app():
     load_dotenv()
     """Application factory for ASL Practice app."""
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret")  # replace later
-
+    app.config["SECRET_KEY"] = os.getenv(
+    "FLASK_SECRET_KEY", "dev-secret"
+    )
+    
     # Setup MongoDB connection
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongo:27017/ASL_DB")
     MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "ASL_DB")
