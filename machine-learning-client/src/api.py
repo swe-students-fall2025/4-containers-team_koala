@@ -1,3 +1,7 @@
+"""
+API for ML client; handles client interactions with model
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -41,8 +45,12 @@ logger.info("Loaded model from %s", MODEL_PATH)
 app = Flask(__name__)
 CORS(app)
 
+
 @app.route("/health", methods=["GET"])
 def health() -> Any:
+    """
+    Returns status code 200 indicating healthy if reachable
+    """
     return jsonify({"status": "ok"}), 200
 
 
@@ -105,8 +113,8 @@ def predict() -> Any:
         ), 400
 
     # Data is ok -> normalize and predict
-    feats = normalize_landmarks(pts_array)  
-    x = torch.from_numpy(feats).unsqueeze(0).to(device) 
+    feats = normalize_landmarks(pts_array)
+    x = torch.from_numpy(feats).unsqueeze(0).to(device)
 
     with torch.no_grad():
         logits = model(x)

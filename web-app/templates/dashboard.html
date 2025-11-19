@@ -23,11 +23,15 @@
 
     <div class="card">
         <h2>Assessments</h2>
-        {% for title in assessments_taken %}
-        <li>{{ title }}</li>
-    {% else %}
-        <li>No assessments completed yet.</li>
-    {% endfor %}
+        <ul>
+        {% if assessments_taken %}
+            {% for title in assessments_taken %}
+                <li>{{ title }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No assessments completed yet.</li>
+        {% endif %}
+        </ul>
     </div>
 
 {% else %}
