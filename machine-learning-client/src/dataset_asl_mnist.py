@@ -5,13 +5,16 @@ Module that handles ASL Mnist Dataset
 from pathlib import Path
 
 import json
-from typing import Optional, Callable
+from typing import Optional, Callable, Tuple
 
 import torch
 from torch.utils.data import Dataset
 from datasets import load_dataset
 from PIL import Image
-
+import numpy as np
+import mediapipe as mp
+import time
+from datasets import load_dataset
 
 def load_label_maps(label_map_path: Optional[Path] = None):
     """
@@ -34,6 +37,46 @@ def load_label_maps(label_map_path: Optional[Path] = None):
         int(k): int(v) for k, v in mapping["raw_label_to_index"].items()
     }
     return index_to_letter, letter_to_index, raw_label_to_index
+
+def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
+    """
+    Normalize hand landmarks:
+    - Translate so wrist is at origin
+    - Scale so max distance = 1
+    """
+    assert pts.shape == (21, 3)
+
+    wrist = pts[0].copy()
+    centered = pts - wrist
+
+    dists = np.linalg.norm(centered, axis=1)
+    max_dist = np.max(dists)
+
+    if max_dist > 0:
+        centered /= max_dist
+
+    return centered.flatten().astype(np.float32)
+
+mp_hands = mp.solutions.hands
+_mp_model = mp_hands.Hands(
+    static_image_mode=True,
+    max_num_hands=1,
+    min_detection_confidence=0.5,
+)
+
+def load_asl_mnist_with_retries(split="train", max_retries=1000, base_delay=60):
+    for attempt in range(max_retries):
+        try:
+            return load_dataset("Voxel51/American-Sign-Language-MNIST", split=split)
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg or "Too Many Requests" in msg:
+                wait = base_delay * (2 ** attempt)
+                print(f"Got 429 from HF (attempt {attempt+1}/{max_retries}), sleeping {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+    raise RuntimeError("Exceeded max retries while loading ASL MNIST")
 
 
 class ASLMNISTDataset(Dataset):
@@ -60,7 +103,7 @@ class ASLMNISTDataset(Dataset):
                        tensors in [0, 1] with shape (1, 28, 28).
             as_pil: If True, __getitem__ returns PIL.Image instead of tensor
         """
-        self.dataset = load_dataset("Voxel51/American-Sign-Language-MNIST", split=split)
+        self.dataset = load_asl_mnist_with_retries(split=split)
 
         (
             self.index_to_letter,
@@ -74,10 +117,21 @@ class ASLMNISTDataset(Dataset):
     def __len__(self):
         return len(self.dataset)
 
-    def __getitem__(self, idx: int):
+    def _extract_landmarks(self, pil_img: Image.Image) -> Optional[np.ndarray]:
+        """Runs MediaPipe on a PIL image, returns (21,3) or None."""
+        np_img = np.array(pil_img)
+        results = _mp_model.process(np_img)
+
+        if not results.multi_hand_landmarks:
+            return None
+
+        hand = results.multi_hand_landmarks[0]
+        pts = np.array([[lm.x, lm.y, lm.z] for lm in hand.landmark], dtype=np.float32)
+        return pts
+
+    def __getitem__(self, idx: int) -> Tuple[np.ndarray, int]:
         sample = self.dataset[idx]
 
-        # Convert to PIL for consistency
         img = sample["image"]
         if not isinstance(img, Image.Image):
             img = Image.fromarray(img)
@@ -85,25 +139,10 @@ class ASLMNISTDataset(Dataset):
         raw_label = int(sample["label"])
         label = self.raw_label_to_index[raw_label]
 
-        if self.as_pil:
-            return img, label
+        pts = self._extract_landmarks(img)
 
-        # Convert to tensor if no custom transform is provided
-        if self.transform is not None:
-            img_tensor = self.transform(img)
-        else:
-            # Minimal manual conversion to 1x28x28 float tensor in [0, 1]
-            img_tensor = (
-                torch.from_numpy(
-                    (
-                        torch.ByteTensor(torch.ByteStorage.from_buffer(img.tobytes()))
-                        .view(img.size[1], img.size[0])
-                        .numpy()
-                    )
-                )
-                .unsqueeze(0)
-                .float()
-                / 255.0
-            )
+        if pts is None:
+            return np.zeros((63,), dtype=np.float32), label
 
-        return img_tensor, label
+        X = normalize_landmarks(pts)  # shape (63,)
+        return X, label
