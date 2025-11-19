@@ -51,6 +51,34 @@ You can think of it as a **small, interactive ASL course** that uses your webcam
 
 ---
 
+## Running the ASL Trainer App with Docker
+
+You can run the full system (MongoDB, ML client, and Web App) using **Docker Compose**. This ensures all components run in isolated containers with the correct dependencies.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) installed
+- [Docker Compose](https://docs.docker.com/compose/install/) installed
+- Clone this repository and navigate to its root directory:
+
+```bash
+git clone https://github.com/swe-students-fall2025/4-containers-team_koala.git
+cd 4-containers-team_koala
+```
+---
+### 1. Build the Docker Images
+
+From the repository root, run:
+
+docker-compose build
+
+### 2. Run it on your port
+
+Find the line: web-1    |  * Running on http://127.0.0.1:5000  
+Follow the link 
+
+---
+
 ## Repository Structure
 
 ```text
@@ -89,27 +117,5 @@ You can think of it as a **small, interactive ASL course** that uses your webcam
         ├── ml-client-ci.yml         # build + test ML client
         └── web-app-ci.yml           # build + test web app
 
-## Running the ASL Trainer App with Docker
+---
 
-You can run the full system (MongoDB, ML client, and Web App) using **Docker Compose**. This ensures all components run in isolated containers with the correct dependencies.
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) installed
-- [Docker Compose](https://docs.docker.com/compose/install/) installed
-- Clone this repository and navigate to its root directory:
-
-```bash
-git clone https://github.com/swe-students-fall2025/4-containers-team_koala.git
-cd 4-containers-team_koala
-
-### 1. Build the Docker Images
-
-From the repository root, run:
-
-docker-compose build
-
-### 2. Run it on your port
-
-Find the line: web-1    |  * Running on http://127.0.0.1:5000  
-Follow the link 
