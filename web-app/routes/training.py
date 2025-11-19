@@ -208,7 +208,9 @@ def call_ml_api(points: list) -> tuple[str, float] | tuple[None, None]:
         return None, None
 
 
-def save_detection(db, user_id: str, lesson_id: int, letter: str, confidence: float) -> bool:
+def save_detection(
+    db, user_id: str, lesson_id: int, letter: str, confidence: float
+) -> bool:
     """Save a detection to the database."""
     detection = {
         "user_id": user_id,
@@ -225,7 +227,9 @@ def save_detection(db, user_id: str, lesson_id: int, letter: str, confidence: fl
         return False
 
 
-def check_tasks(db, user_id: str, lesson_id: int, assessment_def: dict) -> tuple[list[dict], bool]:
+def check_tasks(
+    db, user_id: str, lesson_id: int, assessment_def: dict
+) -> tuple[list[dict], bool]:
     """Check task completion and return task results and overall pass."""
     task_results = []
     window_start = time.time() - assessment_def["time_window_seconds"]
@@ -273,49 +277,54 @@ def update_progress(db, user_id: str, lesson_id: int, assessment_def: dict) -> N
 def assessment(num: int):
     """Handle lesson assessments and prediction scoring."""
     user_id = session.get("user_id")
+    db = current_app.db
+    response = None
+
     if not user_id:
         if request.method == "POST":
-            return jsonify({"error": "Not logged in"}), 401
-        return redirect(url_for("auth.login"))
+            response = jsonify({"error": "Not logged in"}), 401
+        else:
+            response = redirect(url_for("auth.login"))
 
     lesson_obj = LESSON_MAP.get(num)
     assessment_def = ASSESSMENTS.get(num)
-    if not lesson_obj or not assessment_def:
-        return redirect(url_for("training.lessons"))
 
-    db = current_app.db
+    if not response and (not lesson_obj or not assessment_def):
+        response = redirect(url_for("training.lessons"))
 
-    if request.method == "POST":
+    if not response and request.method == "POST":
         data = request.get_json(silent=True)
         points = data.get("points") if data else None
 
         if not points or len(points) != 21:
-            return jsonify({"error": "Invalid landmarks"}), 400
+            response = jsonify({"error": "Invalid landmarks"}), 400
+        else:
+            letter, confidence = call_ml_api(points)
+            if not letter:
+                response = jsonify({"error": "Failed to get prediction"}), 500
+            elif not save_detection(db, user_id, num, letter, confidence):
+                response = jsonify({"error": "Failed to save detection"}), 500
+            else:
+                task_results, overall_pass = check_tasks(
+                    db, user_id, num, assessment_def
+                )
+                if overall_pass:
+                    update_progress(db, user_id, num, assessment_def)
+                response = jsonify(
+                    {
+                        "current_letter": letter,
+                        "current_confidence": confidence,
+                        "task_results": task_results,
+                        "overall_pass": overall_pass,
+                    }
+                )
 
-        letter, confidence = call_ml_api(points)
-        if not letter:
-            return jsonify({"error": "Failed to get prediction"}), 500
-
-        if not save_detection(db, user_id, num, letter, confidence):
-            return jsonify({"error": "Failed to save detection"}), 500
-
-        task_results, overall_pass = check_tasks(db, user_id, num, assessment_def)
-
-        if overall_pass:
-            update_progress(db, user_id, num, assessment_def)
-
-        return jsonify(
-            {
-                "current_letter": letter,
-                "current_confidence": confidence,
-                "task_results": task_results,
-                "overall_pass": overall_pass,
-            }
+    if not response:  # GET request
+        response = render_template(
+            "assessment.html",
+            lesson=lesson_obj,
+            lesson_num=num,
+            tasks=assessment_def["tasks"],
         )
 
-    return render_template(
-        "assessment.html",
-        lesson=lesson_obj,
-        lesson_num=num,
-        tasks=assessment_def["tasks"],
-    )
+    return response

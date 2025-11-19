@@ -2,6 +2,7 @@ from flask import Flask
 from pymongo import MongoClient
 import os
 
+
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "dev_key"  # replace later
@@ -22,6 +23,7 @@ def create_app():
     app.register_blueprint(training)
 
     return app
+
 
 app = create_app()
 
