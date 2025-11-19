@@ -1,5 +1,4 @@
 from __future__ import annotations
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -7,8 +6,8 @@ import torch.nn.functional as F
 class LandmarkMLP(nn.Module):
     def __init__(
         self,
-        input_dim: int = 63,   # 21 landmarks * 3 coordinates
-        num_classes: int = 24, 
+        input_dim: int = 63,  # 21 landmarks * 3 coordinates
+        num_classes: int = 24,
         hidden_dim: int = 128,
         hidden_dim2: int = 64,
         dropout: float = 0.2,
