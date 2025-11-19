@@ -22,10 +22,16 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(training_bp)
-    @app.route('/')
+
+    # ----------------------
+    # Home Route Fix
+    # ----------------------
+    @app.route("/")
     def home():
-        return render_template('home.html')
+        # If user is logged in, go to dashboard
+        if "user_id" in session:
+            return redirect(url_for("dashboard.home"))  # your dashboard view is named 'home'
+        # Otherwise show landing page
+        return render_template("home.html")
 
     return app
-
-
