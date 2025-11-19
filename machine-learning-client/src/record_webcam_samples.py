@@ -5,6 +5,8 @@ from typing import Dict, List
 
 import cv2
 import numpy as np
+import os
+import logging
 
 from .mediapipe_utils import (
     MediaPipeHandDetector,
@@ -12,6 +14,10 @@ from .mediapipe_utils import (
     draw_hand_landmarks_on_frame,
 )
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
@@ -23,6 +29,40 @@ def load_letter_to_index() -> Dict[str, int]:
     with open(LABEL_MAP_PATH, "r") as f:
         mapping = json.load(f)
     return {k: int(v) for k, v in mapping["letter_to_index"].items()}
+
+def append_to_npz(path, X_new, y_new):
+    """
+    Append new data to an existing .npz file
+    """
+
+    X_new = np.asarray(X_new)
+    y_new = np.asarray(y_new)
+
+    logging.info("Appending to NPZ: %s", path)
+    logging.info("New batch shapes: X_new=%s, y_new=%s", X_new.shape, y_new.shape)
+
+    if os.path.exists(path):
+        logging.info("Existing file found. Loading old data...")
+        data = np.load(path)
+        X_old, y_old = data["X"], data["y"]
+
+        logging.info("Old shapes: X_old=%s, y_old=%s", X_old.shape, y_old.shape)
+
+        X = np.concatenate((X_old, X_new), axis=0)
+        y = np.concatenate((y_old, y_new), axis=0)
+
+        logging.info(
+            "Appending %d samples. New total: %d",
+            len(X_new),
+            len(X)
+        )
+    else:
+        logging.info("No existing file. Creating a new one.")
+        X, y = X_new, y_new
+
+    np.savez(path, X=X, y=y)
+
+    logging.info("Saved NPZ. Final shapes: X=%s, y=%s", X.shape, y.shape)
 
 
 def main():
@@ -109,7 +149,8 @@ def main():
     y = np.array(y, dtype=np.int64)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(OUT_PATH, X=X, y=y)
+    append_to_npz(OUT_PATH, X, y)
+    # np.savez(OUT_PATH, X=X, y=y)
 
     print(f"Saved {len(y)} samples to {OUT_PATH}")
 
