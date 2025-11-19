@@ -1,3 +1,7 @@
+"""
+Utility file for MediaPipe
+"""
+
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
@@ -17,12 +21,22 @@ class HandLandmarks:
     Represents a single hand's 21 landmarks as a (21, 3) numpy array
     in normalized image coordinates [0,1], plus handedness info.
     """
+
     points: np.ndarray
     handedness: str
 
 
 class MediaPipeHandDetector:
-    def __init__(self, max_num_hands: int = 1, detection_confidence: float = 0.5, tracking_confidence: float = 0.5):
+    """
+    MediaPipe helper class to abstract MediaPipe usage
+    """
+
+    def __init__(
+        self,
+        max_num_hands: int = 1,
+        detection_confidence: float = 0.5,
+        tracking_confidence: float = 0.5,
+    ):
         self.hands = mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=max_num_hands,
@@ -35,7 +49,8 @@ class MediaPipeHandDetector:
         Run MediaPipe Hands on a BGR frame.
         Returns a list of HandLandmarks objects.
         """
-        frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB) # ignore errors, cv2 modules aren't annotated properly
+        # ignore errors, cv2 modules aren't annotated properly
+        frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         results = self.hands.process(frame_rgb)
 
         landmarks_list: List[HandLandmarks] = []
@@ -54,6 +69,9 @@ class MediaPipeHandDetector:
         return landmarks_list
 
     def close(self):
+        """
+        Closes hands
+        """
         self.hands.close()
 
 
@@ -71,7 +89,7 @@ def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
     """
     assert pts.shape == (21, 3)
     wrist = pts[0].copy()
-    centered = pts - wrist 
+    centered = pts - wrist
 
     # Use max L2 distance to any point
     dists = np.linalg.norm(centered, axis=1)
@@ -80,6 +98,7 @@ def normalize_landmarks(pts: np.ndarray) -> np.ndarray:
         centered /= max_dist
 
     return centered.flatten().astype(np.float32)
+
 
 def draw_hand_landmarks_on_frame(frame_bgr: np.ndarray, hand: HandLandmarks) -> None:
     """
@@ -91,7 +110,7 @@ def draw_hand_landmarks_on_frame(frame_bgr: np.ndarray, hand: HandLandmarks) -> 
         hand: HandLandmarks with points in normalized [0,1] coordinates.
     """
     h, w, _ = frame_bgr.shape
-    pts = hand.points 
+    pts = hand.points
 
     # Convert normalized (x,y) to pixel coords
     pixel_pts = []
@@ -109,7 +128,7 @@ def draw_hand_landmarks_on_frame(frame_bgr: np.ndarray, hand: HandLandmarks) -> 
         cv2.line(frame_bgr, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
     # Draw landmark points
-    for (px, py) in pixel_pts:
+    for px, py in pixel_pts:
         cv2.circle(frame_bgr, (px, py), 4, (0, 0, 255), -1)
 
     cv2.putText(

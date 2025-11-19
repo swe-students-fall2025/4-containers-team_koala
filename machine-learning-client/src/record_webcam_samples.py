@@ -1,12 +1,16 @@
+"""
+Module for recording web cam samples for training model on user's hand
+"""
+
 from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Dict, List
+import os
+import logging
 
 import cv2
 import numpy as np
-import os
-import logging
 
 from .mediapipe_utils import (
     MediaPipeHandDetector,
@@ -15,20 +19,23 @@ from .mediapipe_utils import (
 )
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s"
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
 LABEL_MAP_PATH = DATA_DIR / "label_map.json"
-OUT_PATH = DATA_DIR / "webcam_landmarks.npz" 
+OUT_PATH = DATA_DIR / "webcam_landmarks.npz"
 
 
 def load_letter_to_index() -> Dict[str, int]:
+    """
+    Loads letter to index mapping from label_map.json
+    """
     with open(LABEL_MAP_PATH, "r") as f:
         mapping = json.load(f)
     return {k: int(v) for k, v in mapping["letter_to_index"].items()}
+
 
 def append_to_npz(path, X_new, y_new):
     """
@@ -51,11 +58,7 @@ def append_to_npz(path, X_new, y_new):
         X = np.concatenate((X_old, X_new), axis=0)
         y = np.concatenate((y_old, y_new), axis=0)
 
-        logging.info(
-            "Appending %d samples. New total: %d",
-            len(X_new),
-            len(X)
-        )
+        logging.info("Appending %d samples. New total: %d", len(X_new), len(X))
     else:
         logging.info("No existing file. Creating a new one.")
         X, y = X_new, y_new

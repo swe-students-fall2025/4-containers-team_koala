@@ -1,3 +1,7 @@
+"""
+Train model on data
+"""
+
 from __future__ import annotations
 from pathlib import Path
 
@@ -13,7 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = PROJECT_ROOT / "data" / "webcam_landmarks.npz"
 MODELS_DIR = PROJECT_ROOT / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
-OUT_PATH = MODELS_DIR / "mlp_webcam.pt" # where the saved model will be
+OUT_PATH = MODELS_DIR / "mlp_webcam.pt"  # where the saved model will be
 
 
 def load_dataset():
@@ -32,14 +36,20 @@ def load_dataset():
     return TensorDataset(X_t, y_t)
 
 
-def train(batch_size: int = 64, lr: float = 1e-3, weight_decay: float = 1e-4, num_epochs: int = 30, val_split: float = 0.2):
+def train(
+    batch_size: int = 64,
+    lr: float = 1e-3,
+    weight_decay: float = 1e-4,
+    num_epochs: int = 30,
+    val_split: float = 0.2,
+):
     """
     Train an MLP classifier on the recorded MediaPipe hand-landmark dataset
 
     This function loads the dataset stored in data/webcam_landmarks.npz,
     splits it into training and validation subsets, constructs a lightweight
-    feed-forward neural network, and optimizes it using cross-entropy loss. 
-    
+    feed-forward neural network, and optimizes it using cross-entropy loss.
+
     Will save the best-performing model checkpoint to `models/mlp_webcam.pt`
 
     Args:
@@ -133,7 +143,9 @@ def train(batch_size: int = 64, lr: float = 1e-3, weight_decay: float = 1e-4, nu
 
         val_acc = correct / total if total > 0 else 0.0
 
-        print(f"Epoch {epoch:02d} | Train loss: {train_loss:.4f} | Val acc: {val_acc:.4f}")
+        print(
+            f"Epoch {epoch:02d} | Train loss: {train_loss:.4f} | Val acc: {val_acc:.4f}"
+        )
 
         # Save best model
         if val_acc > best_val_acc:

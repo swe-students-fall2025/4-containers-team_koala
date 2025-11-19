@@ -25,7 +25,9 @@ def load_label_maps(label_map_path: Optional[Path] = None):
 
     index_to_letter = {int(k): v for k, v in mapping["index_to_letter"].items()}
     letter_to_index = {k: int(v) for k, v in mapping["letter_to_index"].items()}
-    raw_label_to_index = {int(k): int(v) for k, v in mapping["raw_label_to_index"].items()}
+    raw_label_to_index = {
+        int(k): int(v) for k, v in mapping["raw_label_to_index"].items()
+    }
     return index_to_letter, letter_to_index, raw_label_to_index
 
 
@@ -39,7 +41,12 @@ class ASLMNISTDataset(Dataset):
     - Returns (image_tensor, label_index)
     """
 
-    def __init__(self, split: str = "train", transform: Optional[Callable] = None, as_pil: bool = False):
+    def __init__(
+        self,
+        split: str = "train",
+        transform: Optional[Callable] = None,
+        as_pil: bool = False,
+    ):
         """
         Args:
             split: "train", "test", or "validation"
@@ -81,10 +88,17 @@ class ASLMNISTDataset(Dataset):
             img_tensor = self.transform(img)
         else:
             # Minimal manual conversion to 1x28x28 float tensor in [0, 1]
-            img_tensor = torch.from_numpy(
-                (torch.ByteTensor(torch.ByteStorage.from_buffer(img.tobytes()))
-                 .view(img.size[1], img.size[0])
-                 .numpy())
-            ).unsqueeze(0).float() / 255.0
+            img_tensor = (
+                torch.from_numpy(
+                    (
+                        torch.ByteTensor(torch.ByteStorage.from_buffer(img.tobytes()))
+                        .view(img.size[1], img.size[0])
+                        .numpy()
+                    )
+                )
+                .unsqueeze(0)
+                .float()
+                / 255.0
+            )
 
         return img_tensor, label
