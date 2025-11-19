@@ -29,25 +29,25 @@ LESSON_MAP = {lesson["id"]: lesson for lesson in LESSONS}
 # ----------------- ASSESSMENTS -----------------
 ASSESSMENTS: Dict[int, Dict[str, Any]] = {
     1: {"title": "Lesson 1 Assessment", "time_window_seconds": 60, "tasks": [
-        {"prompt": "Sign the letter A three times.", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.8},
-        {"prompt": "Sign the letter C three times.", "target_sign": "C", "min_repetitions": 3, "min_confidence": 0.8}
+        {"prompt": "Sign the letter A three times.", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.7},
+        {"prompt": "Sign the letter C three times.", "target_sign": "C", "min_repetitions": 3, "min_confidence": 0.7}
     ]},
     2: {"title": "Lesson 2 Assessment", "time_window_seconds": 60, "tasks": [
-        {"prompt": "Sign the letter H three times.", "target_sign": "H", "min_repetitions": 3, "min_confidence": 0.8},
-        {"prompt": "Sign the letter N three times.", "target_sign": "N", "min_repetitions": 3, "min_confidence": 0.8}
+        {"prompt": "Sign the letter H three times.", "target_sign": "H", "min_repetitions": 3, "min_confidence": 0.7},
+        {"prompt": "Sign the letter L three times.", "target_sign": "L", "min_repetitions": 3, "min_confidence": 0.7}
     ]},
     3: {"title": "Lesson 3 Assessment", "time_window_seconds": 60, "tasks": [
-        {"prompt": "Sign the letter O three times.", "target_sign": "O", "min_repetitions": 3, "min_confidence": 0.8},
-        {"prompt": "Sign the letter S three times.", "target_sign": "S", "min_repetitions": 3, "min_confidence": 0.8}
+        {"prompt": "Sign the letter O three times.", "target_sign": "O", "min_repetitions": 3, "min_confidence": 0.7},
+        {"prompt": "Sign the letter R three times.", "target_sign": "R", "min_repetitions": 3, "min_confidence": 0.7}
     ]},
     4: {"title": "Lesson 4 Assessment", "time_window_seconds": 60, "tasks": [
-        {"prompt": "Sign the letter V three times.", "target_sign": "V", "min_repetitions": 3, "min_confidence": 0.8},
-        {"prompt": "Sign the letter Z three times.", "target_sign": "Z", "min_repetitions": 3, "min_confidence": 0.8}
+        {"prompt": "Sign the letter W three times.", "target_sign": "W", "min_repetitions": 3, "min_confidence": 0.7},
+        {"prompt": "Sign the letter Y three times.", "target_sign": "Y", "min_repetitions": 3, "min_confidence": 0.7}
     ]},
     5: {"title": "Final Practice Assessment", "time_window_seconds": 90, "tasks": [
-        {"prompt": "Sign the letter A three times.", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.8},
-        {"prompt": "Sign the letter M three times.", "target_sign": "M", "min_repetitions": 3, "min_confidence": 0.8},
-        {"prompt": "Sign the letter Z three times.", "target_sign": "Z", "min_repetitions": 3, "min_confidence": 0.8}
+        {"prompt": "Sign the letter B three times.", "target_sign": "B", "min_repetitions": 3, "min_confidence": 0.7},
+        {"prompt": "Sign the letter R three times.", "target_sign": "R", "min_repetitions": 3, "min_confidence": 0.7},
+        {"prompt": "Sign the letter V three times.", "target_sign": "V", "min_repetitions": 3, "min_confidence": 0.7}
     ]}
 }
 
