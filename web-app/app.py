@@ -21,7 +21,6 @@ def create_app():
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(training)
 
-
     return app
 
 app = create_app()

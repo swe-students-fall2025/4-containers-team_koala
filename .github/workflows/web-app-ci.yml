@@ -1,0 +1,48 @@
+name: Web App CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "web-app/**"
+      - ".github/workflows/web-app-ci.yml"
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "web-app/**"
+      - ".github/workflows/web-app-ci.yml"
+
+jobs:
+  build-and-test-web-app:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web-app
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        run: pipenv install --dev
+
+      - name: Lint (black)
+        run: pipenv run black --check .
+
+      - name: Lint (pylint)
+        run: |
+          pipenv run pylint app.py routes
+
+      - name: Run tests with coverage
+        run: |
+          pipenv run coverage run -m pytest
+          pipenv run coverage report
