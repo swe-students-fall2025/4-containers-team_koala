@@ -16,6 +16,7 @@ torch = "*"
 flask = "*"
 ruff = "*"
 flask-cors = "*"
+pytest = "*"
 
 [dev-packages]
 
