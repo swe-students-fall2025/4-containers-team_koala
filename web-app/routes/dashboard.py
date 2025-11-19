@@ -1,10 +1,15 @@
+"""Dashboard routes for user progress and overview."""
+
 from bson import ObjectId
 from flask import Blueprint, render_template, session, redirect, url_for, current_app
+from .training import LESSON_MAP  # moved import to module level
 
 dashboard = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
+
 @dashboard.route("/")
 def home():
+    """Render the dashboard home page for the logged-in user."""
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
 
@@ -21,16 +26,18 @@ def home():
 
     # Get progress
     progress = user.get("progress", {})
-    lessons_completed_ids = progress.get("lessons_completed", [])
+    completed_ids = progress.get("lessons_completed", [])
     assessments_taken_titles = progress.get("assessments_taken", [])
 
-    # Map lesson numbers to lesson titles
-    from routes.training import LESSON_MAP
-    lessons_completed = [LESSON_MAP.get(l, {}).get("title", f"Lesson {l}") for l in lessons_completed_ids]
+    # Map lesson numbers to titles
+    lessons_completed = [
+        LESSON_MAP.get(lesson_id, {}).get("title", f"Lesson {lesson_id}")
+        for lesson_id in completed_ids
+    ]
 
     return render_template(
         "dashboard.html",
         username=username,
         lessons_completed=lessons_completed,
-        assessments_taken=assessments_taken_titles
+        assessments_taken=assessments_taken_titles,
     )
