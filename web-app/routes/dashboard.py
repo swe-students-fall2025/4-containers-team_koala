@@ -2,7 +2,7 @@
 
 from bson import ObjectId
 from flask import Blueprint, render_template, session, redirect, url_for, current_app
-from routes.training import LESSON_MAP  # moved import to module level
+from .training import LESSON_MAP  # moved import to module level
 
 dashboard = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
