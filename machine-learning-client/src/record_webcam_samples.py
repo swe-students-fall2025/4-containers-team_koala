@@ -32,8 +32,7 @@ def load_letter_to_index() -> Dict[str, int]:
 
 def append_to_npz(path, X_new, y_new):
     """
-    Append new data to an existing .npz file.
-    Uses lazy string formatting for all logging.
+    Append new data to an existing .npz file
     """
 
     X_new = np.asarray(X_new)
