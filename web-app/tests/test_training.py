@@ -15,16 +15,16 @@ from routes.training import (
 )
 
 
-# lesson routes
+# Lesson route tests
 def test_lessons_redirects_not_logged_in(client):
-    """Redirect to login when not logged in."""
+    """Redirect to login when user is not logged in."""
     resp = client.get("/training/")
     assert resp.status_code == 302
     assert "/login" in resp.headers["Location"]
 
 
 def test_lessons_page_logged_in(client, app):
-    """Lessons page renders for logged-in user."""
+    """Lessons page renders for a logged-in user."""
     with client.session_transaction() as sess:
         sess["user_id"] = "123"
 
@@ -35,7 +35,7 @@ def test_lessons_page_logged_in(client, app):
 
 
 def test_lesson_page_valid(client):
-    """Lesson page should render when user is logged in."""
+    """Lesson page renders correctly when valid lesson ID is accessed."""
     with client.session_transaction() as sess:
         sess["user_id"] = "abc"
 
@@ -46,7 +46,7 @@ def test_lesson_page_valid(client):
 
 
 def test_lesson_page_invalid_redirects(client):
-    """Invalid lesson ID should redirect."""
+    """Invalid lesson ID redirects to lessons page."""
     with client.session_transaction() as sess:
         sess["user_id"] = "abc"
 
@@ -55,7 +55,7 @@ def test_lesson_page_invalid_redirects(client):
     assert "/training" in resp.headers["Location"]
 
 
-# ML API calls tests
+# ML API call tests
 @patch("routes.training.requests.post")
 def test_call_ml_api_success(mock_post):
     """Simulate successful ML API response."""
@@ -63,7 +63,6 @@ def test_call_ml_api_success(mock_post):
     mock_post.return_value.json.return_value = {"letter": "A", "confidence": 0.82}
 
     letter, conf = call_ml_api(points=[[0, 0, 0]] * 21)
-
     assert letter == "A"
     assert conf == 0.82
 
@@ -74,14 +73,13 @@ def test_call_ml_api_fail(mock_post):
     mock_post.side_effect = Exception("API Down")
 
     letter, conf = call_ml_api(points=[[0, 0, 0]] * 21)
-
     assert letter is None
     assert conf is None
 
 
-# db save tests
+# Database save tests
 def test_save_detection_success(app):
-    """Save detection successfully."""
+    """Detection saves successfully to the database."""
     with app.app_context():
         ok = save_detection(
             db=app.db,
@@ -95,7 +93,7 @@ def test_save_detection_success(app):
 
 
 def test_save_detection_failure(app):
-    """Save detection fails with broken DB."""
+    """Detection save fails if database is broken."""
     class BrokenDB:
         def __getitem__(self, name):
             raise Exception("DB DOWN")
@@ -110,9 +108,9 @@ def test_save_detection_failure(app):
     assert ok is False
 
 
-# task logic tests
+# Task logic tests
 def test_check_tasks_pass(app):
-    """Task passes when repetitions >= required."""
+    """Task passes when repetitions meet or exceed the minimum required."""
     with app.app_context():
         now = time.time()
         app.db.detections.insert_many([
@@ -134,13 +132,12 @@ def test_check_tasks_pass(app):
         }
 
         result, overall = check_tasks(app.db, "u1", 1, tasks)
-
         assert overall is True
         assert result[0]["passed"] is True
 
 
 def test_check_tasks_fail(app):
-    """Task fails when repetitions < required."""
+    """Task fails when repetitions are below minimum required."""
     with app.app_context():
         now = time.time()
         app.db.detections.insert_one(
@@ -161,14 +158,13 @@ def test_check_tasks_fail(app):
         }
 
         result, overall = check_tasks(app.db, "u1", 1, tasks)
-
         assert overall is False
         assert result[0]["passed"] is False
 
 
-# update progress tests
+# Progress update test
 def test_update_progress(app):
-    """Progress is updated correctly."""
+    """Updates user progress correctly."""
     with app.app_context():
         user_id = app.db.users.insert_one(
             {"progress": {"lessons_completed": [], "assessments_taken": []}}
@@ -186,9 +182,9 @@ def test_update_progress(app):
         assert "Test Assessment" in user["progress"]["assessments_taken"]
 
 
-# assessment route tests
+# Assessment route tests
 def test_assessment_page_renders(client):
-    """Assessment page renders correctly."""
+    """Assessment page renders properly for logged-in user."""
     with client.session_transaction() as sess:
         sess["user_id"] = "x"
 
@@ -199,7 +195,7 @@ def test_assessment_page_renders(client):
 
 @patch("routes.training.call_ml_api")
 def test_assessment_post_success(mock_ml, client, app):
-    """Simulate correct ML prediction and passing tasks."""
+    """Simulate correct ML prediction and passing assessment tasks."""
     mock_ml.return_value = ("A", 0.9)
 
     with client.session_transaction() as sess:
