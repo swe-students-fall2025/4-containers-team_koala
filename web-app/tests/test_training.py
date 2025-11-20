@@ -3,15 +3,11 @@ Tests for training routes.
 """
 
 import time
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import patch
 
 from routes.training import (
     LESSONS,
-    LESSON_MAP,
     IMAGE_MAP,
-    ASSESSMENTS,
     call_ml_api,
     save_detection,
     check_tasks,

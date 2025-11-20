@@ -3,10 +3,6 @@ Tests for authentication routes.
 """
 
 from datetime import datetime
-
-import pytest
-from bson import ObjectId
-from flask import session
 from werkzeug.security import generate_password_hash
 
 from routes.auth import validate_registration, get_user_if_valid
