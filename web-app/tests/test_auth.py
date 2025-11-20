@@ -1,3 +1,7 @@
+"""
+Tests for authentication routes.
+"""
+
 from datetime import datetime
 from typing import Tuple
 
@@ -5,7 +9,7 @@ from bson import ObjectId
 from flask import session
 from werkzeug.security import generate_password_hash
 
-from routes.auth import get_user_if_valid, validate_registration
+from routes.auth import validate_registration
 
 def test_validate_registration_success(app) -> None:
     """Empty email/username/password should be rejected."""
