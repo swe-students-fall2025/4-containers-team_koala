@@ -3,13 +3,14 @@ Tests for authentication routes.
 """
 
 from datetime import datetime
-from typing import Tuple
 
+import pytest
 from bson import ObjectId
 from flask import session
 from werkzeug.security import generate_password_hash
 
-from routes.auth import validate_registration
+from routes.auth import validate_registration, get_user_if_valid
+
 
 def test_validate_registration_success(app) -> None:
     """Empty email/username/password should be rejected."""
@@ -21,6 +22,7 @@ def test_validate_registration_success(app) -> None:
         )
         assert ok is True
         assert msg == ""
+
 
 def test_validate_registration_rejects_empty_fields(app) -> None:
     """Empty email/username/password should be rejected."""
@@ -86,8 +88,6 @@ def test_validate_registration_rejects_existing_email(app) -> None:
 
 def test_get_user_if_valid_returns_user_for_correct_password(app) -> None:
     """get_user_if_valid should return the user document on success."""
-    from routes.auth import get_user_if_valid  # local import to ensure app context
-
     with app.app_context():
         users = app.db.users
         user_id = users.insert_one(
@@ -109,8 +109,6 @@ def test_get_user_if_valid_returns_user_for_correct_password(app) -> None:
 
 def test_get_user_if_valid_returns_none_for_wrong_password(app) -> None:
     """get_user_if_valid should return None when password is wrong."""
-    from routes.auth import get_user_if_valid
-
     with app.app_context():
         users = app.db.users
         users.insert_one(
@@ -156,5 +154,3 @@ def test_login_route_success(client, app) -> None:
     with client.session_transaction() as sess:
         assert sess.get("user_id") is not None
         assert sess.get("username") == "dora"
-
-
