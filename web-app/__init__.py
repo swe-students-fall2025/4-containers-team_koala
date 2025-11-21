@@ -22,9 +22,13 @@ def create_app():
     app.db = MongoClient(mongo_uri).get_database(mongo_db_name)
 
     # Import and register blueprints
-    from .routes.auth import auth as auth_bp # pylint: disable=import-outside-toplevel
-    from .routes.dashboard import dashboard as dashboard_bp # pylint: disable=import-outside-toplevel
-    from .routes.training import training as training_bp # pylint: disable=import-outside-toplevel
+    from .routes.auth import auth as auth_bp  # pylint: disable=import-outside-toplevel
+    from .routes.dashboard import (
+        dashboard as dashboard_bp,
+    )  # pylint: disable=import-outside-toplevel
+    from .routes.training import (
+        training as training_bp,
+    )  # pylint: disable=import-outside-toplevel
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)

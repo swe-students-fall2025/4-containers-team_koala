@@ -142,7 +142,10 @@ def test_login_route_success(client, app) -> None:
 
     # Should redirect to dashboard.home
     assert resp.status_code == 302
-    assert "/dashboard" in resp.headers["Location"] or "dashboard" in resp.headers["Location"]
+    assert (
+        "/dashboard" in resp.headers["Location"]
+        or "dashboard" in resp.headers["Location"]
+    )
 
     # Check session
     with client.session_transaction() as sess:
