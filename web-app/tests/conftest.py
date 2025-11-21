@@ -4,14 +4,15 @@ Pytest fixtures for web-app tests.
 
 import os
 import sys
+import pytest
+import mongomock
+
+from __init__ import create_app
 
 # Ensure web_app package is in PYTHONPATH
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, BASE_DIR)  
+sys.path.insert(0, BASE_DIR)
 
-import pytest
-import mongomock
-from web_app import create_app  
 
 
 @pytest.fixture

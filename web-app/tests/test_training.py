@@ -95,8 +95,9 @@ def test_save_detection_success(app):
 def test_save_detection_failure(app):
     """Detection save fails if database is broken."""
     class BrokenDB:
+        """Simple fake DB that always fails when accessed."""
         def __getitem__(self, name):
-            raise Exception("DB DOWN")
+            raise RuntimeError("DB DOWN")
 
     ok = save_detection(
         db=BrokenDB(),
@@ -127,7 +128,8 @@ def test_check_tasks_pass(app):
         tasks = {
             "time_window_seconds": 60,
             "tasks": [
-                {"prompt": "Sign A", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.5}
+                {"prompt": "Sign A", "target_sign": "A",
+                "min_repetitions": 3, "min_confidence": 0.5}
             ],
         }
 
@@ -153,7 +155,8 @@ def test_check_tasks_fail(app):
         tasks = {
             "time_window_seconds": 60,
             "tasks": [
-                {"prompt": "Sign A", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.5}
+                {"prompt": "Sign A", "target_sign": "A",
+                "min_repetitions": 3, "min_confidence": 0.5}
             ],
         }
 
