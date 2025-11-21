@@ -1,6 +1,7 @@
 """
 Model for predicting letter
 """
+
 from __future__ import annotations
 import torch
 import torch.nn as nn
@@ -11,6 +12,7 @@ class ResidualBlock(nn.Module):
     """
     MLP block: x -> LN -> Linear -> GELU -> Dropout -> Linear -> +x
     """
+
     def __init__(self, dim: int, expansion: int = 2, dropout: float = 0.3):
         super().__init__()
         hidden = dim * expansion

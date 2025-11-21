@@ -65,6 +65,7 @@ def test_load_asl_mnist_with_retries_raises_on_other_errors(monkeypatch):
     """
     Non-429 errors should be raised immediately (no retry loop).
     """
+
     def fake_load_dataset(name, split):
         raise Exception("Some other error")
 
@@ -80,6 +81,7 @@ def test_load_asl_mnist_with_retries_raises_on_other_errors(monkeypatch):
 # -----------------------------
 # ASLMNISTDataset tests
 # -----------------------------
+
 
 class DummyHFDS:
     """Minimal fake HF dataset with image + label fields."""
@@ -102,7 +104,9 @@ def test_aslmnistdataset_getitem_with_landmarks(monkeypatch):
     When _extract_landmarks returns valid (21,3) pts, __getitem__
     should return a (63,) normalized vector and mapped label.
     """
-    monkeypatch.setattr(dsm, "load_asl_mnist_with_retries", lambda split="train": DummyHFDS())
+    monkeypatch.setattr(
+        dsm, "load_asl_mnist_with_retries", lambda split="train": DummyHFDS()
+    )
 
     def fake_load_label_maps(label_map_path=None):
         index_to_letter = {0: "A", 1: "B"}
@@ -117,7 +121,9 @@ def test_aslmnistdataset_getitem_with_landmarks(monkeypatch):
         pts[1] = np.array([2.0, 0.0, 0.0], dtype=np.float32)
         return pts
 
-    monkeypatch.setattr(ASLMNISTDataset, "_extract_landmarks", fake_extract_landmarks, raising=False)
+    monkeypatch.setattr(
+        ASLMNISTDataset, "_extract_landmarks", fake_extract_landmarks, raising=False
+    )
 
     ds = ASLMNISTDataset(split="train")
 
@@ -138,7 +144,9 @@ def test_aslmnistdataset_getitem_with_no_landmarks(monkeypatch):
     If _extract_landmarks returns None, __getitem__ should return
     a zero vector of shape (63,).
     """
-    monkeypatch.setattr(dsm, "load_asl_mnist_with_retries", lambda split="train": DummyHFDS())
+    monkeypatch.setattr(
+        dsm, "load_asl_mnist_with_retries", lambda split="train": DummyHFDS()
+    )
 
     def fake_load_label_maps(label_map_path=None):
         index_to_letter = {0: "A", 1: "B"}

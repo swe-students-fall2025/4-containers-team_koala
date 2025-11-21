@@ -15,7 +15,6 @@ import numpy as np
 import mediapipe as mp
 
 
-
 def load_label_maps(label_map_path: Optional[Path] = None):
     """
     Load index/label mappings from data/label_map.json.
@@ -28,7 +27,7 @@ def load_label_maps(label_map_path: Optional[Path] = None):
     if label_map_path is None:
         label_map_path = Path(__file__).resolve().parents[1] / "data" / "label_map.json"
 
-    with open(label_map_path, "r", encoding='utf8') as f:
+    with open(label_map_path, "r", encoding="utf8") as f:
         mapping = json.load(f)
 
     index_to_letter = {int(k): v for k, v in mapping["index_to_letter"].items()}
