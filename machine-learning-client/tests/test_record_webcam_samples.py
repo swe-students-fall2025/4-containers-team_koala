@@ -1,8 +1,7 @@
 # tests/test_record_webcam_samples.py
-
+from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 
 import src.record_webcam_samples as rws
 

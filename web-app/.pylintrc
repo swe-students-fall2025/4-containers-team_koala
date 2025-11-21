@@ -1,0 +1,6 @@
+[MASTER]
+ignore-patterns=^\..*$
+ignore=run.py,app.py
+
+[MESSAGES CONTROL]
+disable=invalid-name,missing-module-docstring

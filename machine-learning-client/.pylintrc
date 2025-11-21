@@ -1,0 +1,25 @@
+[MASTER]
+ignore-patterns=^\..*$
+
+[MESSAGES CONTROL]
+disable=
+    import-error,
+    missing-function-docstring,
+    missing-class-docstring,
+    missing-module-docstring,
+    unused-import,
+    unused-argument,
+    line-too-long,
+    trailing-whitespace,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-locals,
+    duplicate-code,
+    redefined-outer-name,
+    broad-exception-raised,
+    broad-exception-caught,
+    invalid-name,
+    too-many-positional-arguments,
+    consider-using-from-import,
+    unused-variable,
+    unspecified-encoding

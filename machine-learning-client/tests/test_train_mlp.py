@@ -1,8 +1,8 @@
+from unittest.mock import MagicMock
 import numpy as np
 import pytest
 import torch
 from torch.utils.data import TensorDataset
-from unittest.mock import MagicMock
 
 import src.train_mlp as tm
 
