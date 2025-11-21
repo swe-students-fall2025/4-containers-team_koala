@@ -1,3 +1,9 @@
+"""
+web-app package initializer.
+Sets up Flask app, database, and routes.
+"""
+
+
 from flask import Flask, redirect, url_for, session, render_template
 from pymongo import MongoClient
 from dotenv import load_dotenv

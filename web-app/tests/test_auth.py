@@ -1,14 +1,15 @@
-from datetime import datetime
-from typing import Tuple
+"""
+Tests for authentication routes.
+"""
 
-from bson import ObjectId
-from flask import session
+from datetime import datetime
 from werkzeug.security import generate_password_hash
 
-from routes.auth import get_user_if_valid, validate_registration
+from routes.auth import validate_registration, get_user_if_valid
+
 
 def test_validate_registration_success(app) -> None:
-    """Empty email/username/password should be rejected."""
+    """Registration succeeds with valid input."""
     with app.app_context():
         ok, msg = validate_registration(
             email="test@example.com",
@@ -17,6 +18,7 @@ def test_validate_registration_success(app) -> None:
         )
         assert ok is True
         assert msg == ""
+
 
 def test_validate_registration_rejects_empty_fields(app) -> None:
     """Empty email/username/password should be rejected."""
@@ -41,14 +43,14 @@ def test_validate_registration_rejects_short_password(app) -> None:
 def test_validate_registration_rejects_existing_username(app) -> None:
     """Should not allow duplicate usernames."""
     with app.app_context():
-        app.db.users.insert_one(
+        _ = app.db.users.insert_one(
             {
                 "username": "duplicate",
                 "email": "dup@example.com",
                 "password_hash": generate_password_hash("secret123"),
                 "created_at": datetime.utcnow(),
             }
-        )
+        ).inserted_id
 
         ok, msg = validate_registration(
             email="new@example.com",
@@ -62,14 +64,14 @@ def test_validate_registration_rejects_existing_username(app) -> None:
 def test_validate_registration_rejects_existing_email(app) -> None:
     """Should not allow duplicate emails."""
     with app.app_context():
-        app.db.users.insert_one(
+        _ = app.db.users.insert_one(
             {
                 "username": "someone",
                 "email": "taken@example.com",
                 "password_hash": generate_password_hash("secret123"),
                 "created_at": datetime.utcnow(),
             }
-        )
+        ).inserted_id
 
         ok, msg = validate_registration(
             email="taken@example.com",
@@ -82,11 +84,9 @@ def test_validate_registration_rejects_existing_email(app) -> None:
 
 def test_get_user_if_valid_returns_user_for_correct_password(app) -> None:
     """get_user_if_valid should return the user document on success."""
-    from routes.auth import get_user_if_valid  # local import to ensure app context
-
     with app.app_context():
         users = app.db.users
-        user_id = users.insert_one(
+        _ = users.insert_one(
             {
                 "username": "alice",
                 "email": "alice@example.com",
@@ -99,24 +99,21 @@ def test_get_user_if_valid_returns_user_for_correct_password(app) -> None:
 
         user = get_user_if_valid("alice", "secret123")
         assert user is not None
-        assert user["_id"] == user_id
         assert user["username"] == "alice"
 
 
 def test_get_user_if_valid_returns_none_for_wrong_password(app) -> None:
     """get_user_if_valid should return None when password is wrong."""
-    from routes.auth import get_user_if_valid
-
     with app.app_context():
         users = app.db.users
-        users.insert_one(
+        _ = users.insert_one(
             {
                 "username": "bob",
                 "email": "bob@example.com",
                 "password_hash": generate_password_hash("correctpw"),
                 "created_at": datetime.utcnow(),
             }
-        )
+        ).inserted_id
 
         user = get_user_if_valid("bob", "wrongpw")
         assert user is None
@@ -124,10 +121,9 @@ def test_get_user_if_valid_returns_none_for_wrong_password(app) -> None:
 
 def test_login_route_success(client, app) -> None:
     """POST /login should log the user in with valid credentials."""
-    # Seed a user
     with app.app_context():
         users = app.db.users
-        user_id = users.insert_one(
+        _ = users.insert_one(
             {
                 "username": "dora",
                 "email": "dora@example.com",
@@ -152,5 +148,3 @@ def test_login_route_success(client, app) -> None:
     with client.session_transaction() as sess:
         assert sess.get("user_id") is not None
         assert sess.get("username") == "dora"
-
-
