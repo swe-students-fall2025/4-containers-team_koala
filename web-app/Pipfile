@@ -19,6 +19,7 @@ typing_extensions = "*"
 tomli = "*"
 coverage = "*"
 mongomock = "*"
+dotenv = "*"
 
 [requires]
 python_version = "3.13"
