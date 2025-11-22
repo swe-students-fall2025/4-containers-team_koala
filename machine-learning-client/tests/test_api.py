@@ -1,10 +1,12 @@
 """
 Unit tests for API
 """
+
 import numpy as np
 import pytest
 
 from src.api import app
+
 
 @pytest.fixture
 def client():

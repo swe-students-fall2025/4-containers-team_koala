@@ -93,24 +93,33 @@ def predict() -> Any:
 
     if not isinstance(points, list) or len(points) != 21:
         logger.error("ERROR: Points is not expected shape: %s", data)
-        return jsonify(
-            {"error": "Expected 'points' to be a list of length 21 (21 landmarks)"}
-        ), 400
+        return (
+            jsonify(
+                {"error": "Expected 'points' to be a list of length 21 (21 landmarks)"}
+            ),
+            400,
+        )
 
     try:
         pts_array = np.asarray(points, dtype=np.float32)
     except ValueError as e:
-        return jsonify({"error": f"Could not convert 'points' to a float32 array {e}"}), 400
+        return (
+            jsonify({"error": f"Could not convert 'points' to a float32 array {e}"}),
+            400,
+        )
 
     if pts_array.shape != (21, 3):
-        return jsonify(
-            {
-                "error": (
-                    "Expected 'points' shape (21, 3). "
-                    f"Got {list(pts_array.shape)} instead."
-                )
-            }
-        ), 400
+        return (
+            jsonify(
+                {
+                    "error": (
+                        "Expected 'points' shape (21, 3). "
+                        f"Got {list(pts_array.shape)} instead."
+                    )
+                }
+            ),
+            400,
+        )
 
     # Data is ok -> normalize and predict
     feats = normalize_landmarks(pts_array)
@@ -125,12 +134,15 @@ def predict() -> Any:
 
     letter = INDEX_TO_LETTER.get(pred_idx, "?")
 
-    return jsonify(
-        {
-            "letter": letter,
-            "confidence": confidence,
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "letter": letter,
+                "confidence": confidence,
+            }
+        ),
+        200,
+    )
 
 
 if __name__ == "__main__":

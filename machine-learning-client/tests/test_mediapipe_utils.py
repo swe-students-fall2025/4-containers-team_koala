@@ -4,7 +4,11 @@ import numpy as np
 import pytest
 
 import src.mediapipe_utils as mpu
-from src.mediapipe_utils import HandLandmarks, normalize_landmarks, MediaPipeHandDetector
+from src.mediapipe_utils import (
+    HandLandmarks,
+    normalize_landmarks,
+    MediaPipeHandDetector,
+)
 
 
 def test_normalize_landmarks_basic():
@@ -84,7 +88,13 @@ def test_mediapipe_hand_detector_process(monkeypatch):
             self.multi_handedness = [FakeHandedness("Right")]
 
     class FakeHands:
-        def __init__(self, static_image_mode, max_num_hands, min_detection_confidence, min_tracking_confidence):
+        def __init__(
+            self,
+            static_image_mode,
+            max_num_hands,
+            min_detection_confidence,
+            min_tracking_confidence,
+        ):
             self.called_with = {
                 "static_image_mode": static_image_mode,
                 "max_num_hands": max_num_hands,
@@ -100,7 +110,9 @@ def test_mediapipe_hand_detector_process(monkeypatch):
 
     monkeypatch.setattr(mpu.mp_hands, "Hands", FakeHands)
 
-    detector = MediaPipeHandDetector(max_num_hands=1, detection_confidence=0.5, tracking_confidence=0.5)
+    detector = MediaPipeHandDetector(
+        max_num_hands=1, detection_confidence=0.5, tracking_confidence=0.5
+    )
 
     frame = np.zeros((100, 100, 3), dtype=np.uint8)
     hands = detector.process(frame)

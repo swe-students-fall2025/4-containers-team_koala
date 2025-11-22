@@ -94,9 +94,12 @@ def test_save_detection_success(app):
 
 def test_save_detection_failure(app):
     """Detection save fails if database is broken."""
+
     class BrokenDB:
+        """Simple fake DB that always fails when accessed."""
+
         def __getitem__(self, name):
-            raise Exception("DB DOWN")
+            raise RuntimeError("DB DOWN")
 
     ok = save_detection(
         db=BrokenDB(),
@@ -113,21 +116,28 @@ def test_check_tasks_pass(app):
     """Task passes when repetitions meet or exceed the minimum required."""
     with app.app_context():
         now = time.time()
-        app.db.detections.insert_many([
-            {
-                "user_id": "u1",
-                "lesson_id": 1,
-                "sign_label": "A",
-                "confidence": 0.9,
-                "timestamp": now,
-            }
-            for _ in range(3)
-        ])
+        app.db.detections.insert_many(
+            [
+                {
+                    "user_id": "u1",
+                    "lesson_id": 1,
+                    "sign_label": "A",
+                    "confidence": 0.9,
+                    "timestamp": now,
+                }
+                for _ in range(3)
+            ]
+        )
 
         tasks = {
             "time_window_seconds": 60,
             "tasks": [
-                {"prompt": "Sign A", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.5}
+                {
+                    "prompt": "Sign A",
+                    "target_sign": "A",
+                    "min_repetitions": 3,
+                    "min_confidence": 0.5,
+                }
             ],
         }
 
@@ -153,7 +163,12 @@ def test_check_tasks_fail(app):
         tasks = {
             "time_window_seconds": 60,
             "tasks": [
-                {"prompt": "Sign A", "target_sign": "A", "min_repetitions": 3, "min_confidence": 0.5}
+                {
+                    "prompt": "Sign A",
+                    "target_sign": "A",
+                    "min_repetitions": 3,
+                    "min_confidence": 0.5,
+                }
             ],
         }
 
@@ -201,11 +216,18 @@ def test_assessment_post_success(mock_ml, client, app):
     with client.session_transaction() as sess:
         sess["user_id"] = "user123"
 
-    app.db.detections.insert_many([
-        {"user_id": "user123", "lesson_id": 1, "sign_label": "A",
-         "confidence": 0.9, "timestamp": time.time()}
-        for _ in range(3)
-    ])
+    app.db.detections.insert_many(
+        [
+            {
+                "user_id": "user123",
+                "lesson_id": 1,
+                "sign_label": "A",
+                "confidence": 0.9,
+                "timestamp": time.time(),
+            }
+            for _ in range(3)
+        ]
+    )
 
     sample_points = [[0, 0, 0]] * 21
     resp = client.post(

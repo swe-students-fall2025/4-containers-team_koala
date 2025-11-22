@@ -1,8 +1,9 @@
+import os
 from datetime import datetime
 from pymongo import MongoClient
 from bson import ObjectId
 from dotenv import load_dotenv
-import os
+
 
 load_dotenv()
 

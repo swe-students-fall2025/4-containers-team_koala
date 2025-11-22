@@ -1,8 +1,7 @@
 # tests/test_record_webcam_samples.py
-
+from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 
 import src.record_webcam_samples as rws
 
@@ -11,9 +10,7 @@ import src.record_webcam_samples as rws
 # Test: load_letter_to_index
 # ---------------------------------------------------------
 def test_load_letter_to_index(tmp_path, monkeypatch):
-    fake_map = {
-        "letter_to_index": {"A": 0, "B": 1}
-    }
+    fake_map = {"letter_to_index": {"A": 0, "B": 1}}
     fake_file = tmp_path / "label_map.json"
     fake_file.write_text(json_dump := '{"letter_to_index": {"A": 0, "B": 1}}')
 
@@ -85,14 +82,11 @@ def test_main_saves_samples(tmp_path, monkeypatch):
     monkeypatch.setattr(rws.cv2, "imshow", lambda *args, **kwargs: None)
     monkeypatch.setattr(rws.cv2, "destroyAllWindows", lambda: None)
 
+    monkeypatch.setattr(rws.cv2, "waitKey", lambda _: ord("q"))
+
     monkeypatch.setattr(
-        rws.cv2, 
-        "waitKey",
-        lambda _: ord("q")
+        rws, "normalize_landmarks", lambda pts: np.ones(63, dtype=np.float32)
     )
-
-
-    monkeypatch.setattr(rws, "normalize_landmarks", lambda pts: np.ones(63, dtype=np.float32))
 
     rws.main()
 

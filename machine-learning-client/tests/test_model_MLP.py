@@ -69,7 +69,7 @@ def test_landmark_mlp_parameter_count():
 
     total_params = sum(p.numel() for p in model.parameters())
     assert total_params > 50_000
-    assert total_params < 1_000_000 
+    assert total_params < 1_000_000
 
 
 def test_residual_block_actually_residual():
