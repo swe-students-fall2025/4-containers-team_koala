@@ -18,6 +18,7 @@ pytest-flask = "*"
 typing_extensions = "*"
 tomli = "*"
 coverage = "*"
+mongomock = "*"
 
 [requires]
 python_version = "3.13"
