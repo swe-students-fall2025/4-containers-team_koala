@@ -13,6 +13,7 @@ sys.path.insert(0, BASE_DIR)
 
 from __init__ import create_app
 
+
 @pytest.fixture
 def app():
     """
