@@ -23,4 +23,5 @@ disable=
     consider-using-from-import,
     unused-variable,
     unspecified-encoding,
-    no-member
+    no-member,
+    not-callable
