@@ -19,22 +19,26 @@ jobs:
         run: |
           cd ${{ matrix.subdir }}
           python -m pip install --upgrade pip
-          python -m pip install pipenv
-          pipenv sync --dev --python $(which python)
-          pipenv shell --fancy --python $(which python)
-      - name: Clean pip cache
-        run: |
-          pip cache purge || true
-          rm -rf ~/.cache/pip || true
+          if [ "${{ matrix.subdir }}" = "machine-learning-client" ]; then
+            python -m pip install pylint black
+          else
+            python -m pip install pipenv
+            pipenv sync --dev --python "$(which python)"
       - name: Lint with pylint
         if: ${{ hashFiles(format('{0}/**/*.py', matrix.subdir)) != '' }}
         # you may set pylint to ignore any files or dependencies that make no sense to lint
         run: |
           cd ${{ matrix.subdir }}
-          pipenv run pylint **/*.py
+          if [ "${{ matrix.subdir }}" = "machine-learning-client" ]; then
+            pylint src tests
+          else
+            pipenv run pylint **/*.py
       - name: Format with black
         if: ${{ hashFiles(format('{0}/**/*.py', matrix.subdir)) != '' }}
         # you may set black to ignore any files or dependencies that make no sense to format
         run: |
           cd ${{ matrix.subdir }}
-          pipenv run black --diff --check .
+          if [ "${{ matrix.subdir }}" = "machine-learning-client" ]; then
+            black --diff --check .
+          else
+            pipenv run black --diff --check .
