@@ -22,4 +22,5 @@ disable=
     too-many-positional-arguments,
     consider-using-from-import,
     unused-variable,
-    unspecified-encoding
+    unspecified-encoding,
+    no-member
