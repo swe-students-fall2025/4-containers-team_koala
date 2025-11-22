@@ -13,7 +13,6 @@ tomli = "*"
 [dev-packages]
 pylint = "*"
 black = "*"
-pytest = "*"
 pytest-flask = "*"
 typing_extensions = "*"
 tomli = "*"
@@ -21,6 +20,7 @@ coverage = "*"
 mongomock = "*"
 dotenv = "*"
 requests = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.13"

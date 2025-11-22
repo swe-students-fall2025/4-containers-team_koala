@@ -7,12 +7,11 @@ import sys
 import pytest
 import mongomock
 
-from __init__ import create_app
-
 # Ensure web_app package is in PYTHONPATH
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, BASE_DIR)
 
+from __init__ import create_app
 
 @pytest.fixture
 def app():
